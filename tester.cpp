@@ -13,7 +13,7 @@
 
 
 #define ERGEBNIS_LAENGE 100
-	char ergebnis[ERGEBNIS_LAENGE];
+char ergebnis[ERGEBNIS_LAENGE];
 
 int main(int argc, char *argv[], char *env[])
 {

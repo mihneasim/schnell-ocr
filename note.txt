@@ -1,1 +1,10 @@
-08.07.2009:  Wieder von scratch
+08.07.2009
+Wieder von scratch
+Plan:
+1. Zuerst muss Trennung implementiert werden
+2. Algorithmus implementieren:
+	Zeichenerkennung durch die ÄNDERUNG des leeren Breiches in vier
+	Seiten.
+	2.1 Route erstellen, um den Eigenschaften der gegebenen Zeichen zu
+	entnehmen.
+	2.2 Die Beispiele werden gegeben
