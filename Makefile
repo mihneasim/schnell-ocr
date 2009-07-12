@@ -1,6 +1,6 @@
 CFLAGS=-O2 -march=nocona -pipe -fomit-frame-pointer -mmmx -msse -msse2 -msse3
 
-.PHONY: all ctags clean
+.PHONY: all tags clean
 
 MAKEFILE=Makefile
 
@@ -8,7 +8,7 @@ CFLAGS:=$(CFLAGS) -g
 
 all: hauptteil tester
 
-ctags:
+tags:
 	ctags -R `pkg-config --cflags opencv | sed -e 's/^.*-I\([^ \t]*\).*/\1/'` .
 
 clean:
@@ -17,7 +17,7 @@ clean:
 
 ###############################################################
 hauptteil:
-	$(MAKE) -C ocr
+	CFLAGS="$(CFLAGS)" $(MAKE) -C ocr
 	
 ###############################################################
 

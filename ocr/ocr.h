@@ -7,6 +7,12 @@
 
 #include "list.h"
 
+#define IB_ALLOC(IB,HEIGHT,WIDTH) do{\
+			IB = (struct intern_bitmap *) \
+				malloc(sizeof(struct intern_bitmap));\
+			IB->buffer = (unsigned char *)malloc\
+				(sizeof(unsigned char) * (HEIGHT) * (WIDTH));\
+		     }while(0)
 
 struct intern_bitmap {
 	int width, height;
@@ -15,7 +21,7 @@ struct intern_bitmap {
 	struct list_head list;
 };
 
-int cvmat2intern(CvMat *mat, struct intern_bitmap *bm);
+struct intern_bitmap *cvmat2intern(CvMat *mat);
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge);
 
 #endif
