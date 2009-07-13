@@ -88,6 +88,7 @@ struct intern_bitmap *cvmat2intern(CvMat *mat)
 
 	bm->aufloesung = AUFLOESUNG_KONSTANT;
 
+	/*
 	#ifdef DEBUG
 	for(int i = 0; i < bm->height; i++) {
 		for (int j = 0; j < bm->width; j++) {
@@ -100,6 +101,7 @@ struct intern_bitmap *cvmat2intern(CvMat *mat)
 	}
 	printf("\n\n");
 	#endif
+	*/
 	
 	return bm;
 }
