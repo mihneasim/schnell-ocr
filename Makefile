@@ -14,6 +14,7 @@ tags:
 clean:
 	-$(MAKE) -C ocr clean
 	-rm *.o tester 
+	-rm tags
 
 ###############################################################
 hauptteil:

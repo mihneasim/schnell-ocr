@@ -1,7 +1,8 @@
 08.07.2009
 Wieder von scratch
 Plan:
-1. Zuerst muss Trennung implementiert werden
+
+*1. Zuerst muss Trennung implementiert werden
 2. Algorithmus implementieren:
 	Zeichenerkennung durch die ÄNDERUNG des leeren Breiches in vier
 	Seiten.
