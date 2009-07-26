@@ -34,6 +34,12 @@ int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 	return pixelvalue;
 }
 
+struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org, int new_width, int new_height)
+{
+	if (new_width <= 0 || new_height <= 0)
+		return NULL;
+}
+
 int release_intern_bitmap(struct intern_bitmap *bm)
 {
 	if (bm) {
@@ -73,15 +79,15 @@ struct intern_bitmap *preprocess(IplImage *src)
 struct intern_bitmap *cvmat2intern(CvMat *mat)
 {
 	struct intern_bitmap *bm;
-	
+
 	bm = (struct intern_bitmap *)malloc(sizeof(struct intern_bitmap));
-	
+
 	/* transformieren die OpenCV Struktur zur der internen Struktur*/
 	bm->width = mat->cols;
 	bm->height = mat->rows;
-	bm->buffer = (unsigned char*) malloc(mat->height * 
+	bm->buffer = (unsigned char*) malloc(mat->height *
 					mat->width * sizeof(unsigned char));
-	 /* memcpy ist effektiver als die andere Routen, 
+	 /* memcpy ist effektiver als die andere Routen,
 	  * aber memcpy bei OpenCV wird nicht ganz richtig Ergebnis bekommen*/
 	memcpy(bm->buffer, mat->data.ptr,
 			mat->height * mat->width * sizeof(unsigned char));
@@ -102,7 +108,7 @@ struct intern_bitmap *cvmat2intern(CvMat *mat)
 	printf("\n\n");
 	#endif
 	*/
-	
+
 	return bm;
 }
 
@@ -112,7 +118,7 @@ static CvMat *intern2cvmat(struct intern_bitmap *bm)
 	mat = cvCreateMat(bm->height, bm->width, CV_8UC1);
 	memcpy(mat->data.ptr, bm->buffer,
 			mat->height * mat->width * sizeof(unsigned char));
-	
+
 	#ifdef DEBUG
 	for(int i = 0; i < bm->height; i++) {
 		for (int j = 0; j < bm->width; j++) {
@@ -125,7 +131,7 @@ static CvMat *intern2cvmat(struct intern_bitmap *bm)
 	}
 	printf("\n\n");
 	#endif
-				
+
 	return mat;
 }
 
@@ -133,7 +139,7 @@ static CvMat *intern2cvmat(struct intern_bitmap *bm)
 static struct list_head*
 		projektion_spalten_trennen(const struct intern_bitmap *zeile)
 {
-	/* liefert eine Liste, in den die einzelnen Zeichen als 
+	/* liefert eine Liste, in den die einzelnen Zeichen als
 	 * struct intern_bitmap zurück*/
 	int i, ii, j;
 	int *projektion;
@@ -156,15 +162,15 @@ static struct list_head*
 	}
 	printf("\n");
 	#endif
-	
+
 	zeichenliste = (struct list_head*)malloc(sizeof(struct list_head));
 	INIT_LIST_HEAD(zeichenliste);
-	
+
 	/* zuerst wird das hässliche Verfahren implementiert.
-	 * Wenn die andere Funktionen komplementiert werden, 
+	 * Wenn die andere Funktionen komplementiert werden,
 	 * würde ich es optimieren
 	 */
-	
+
 	/* zerlegen und kopieren die Zeile zu einzelnem Zeichen in einer Liste */
 	for (i = 0; i < zeile->width; i++) {
 		if (projektion[i] != 0) {
@@ -178,7 +184,7 @@ static struct list_head*
 			list_add_tail(&p->list, zeichenliste);
 
 			/* kopieren Daten von einzelnem Zeichen */
-			/* width und height muss unbedingt 
+			/* width und height muss unbedingt
 			 * vor der Kopie initialisiert werden */
 			/*p->width = grenze;
 			p->height = zeile->height;*/
@@ -186,12 +192,12 @@ static struct list_head*
 
 			for (ii = 0; ii < grenze; ii++) {
 				for (j = 0; j < zeile->height; j++) {
-					bm_setpixel(p, j, ii, 
+					bm_setpixel(p, j, ii,
 					    bm_getpixel(zeile, j, i + ii));
 				}
 			}
 			printf("grenze: %d\n",grenze);
-			
+
 			i += grenze;
 		}
 	}
@@ -229,7 +235,7 @@ static struct list_head*
 
 	zeilenliste = (struct list_head*)malloc(sizeof(struct list_head));
 	INIT_LIST_HEAD(zeilenliste);
-	
+
 	alt_zeilennummer = -1;
 	for (i = 0; i <= bild->height; i++) {
 
@@ -284,7 +290,7 @@ static struct list_head*
 	zeilenliste = zeilen_trennen(bild);
 	list_for_each(p, zeilenliste) {
 		teil_zeichenliste = projektion_spalten_trennen(
-					list_entry(p, 
+					list_entry(p,
 						   struct intern_bitmap,
 						   list)
 				    );
@@ -293,15 +299,15 @@ static struct list_head*
 	}
 	free(zeilenliste);
 }
-	
+
 
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
-	
+
 	struct intern_bitmap *bm;
 	struct list_head *zeichenliste;
-	
+
 	bm = preprocess(src);
 
 	/*zeichenliste = projektion_spalten_trennen(bm);*/
