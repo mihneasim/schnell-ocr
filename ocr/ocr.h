@@ -9,13 +9,13 @@
 
 /* Makros */
 
-#define IB_ALLOC(IB,HEIGHT,WIDTH) do{\
-			IB = (struct intern_bitmap *) \
+#define BM_ALLOC(BM,HEIGHT,WIDTH) do{\
+			BM = (struct intern_bitmap *) \
 				malloc(sizeof(struct intern_bitmap));\
-			IB->buffer = (unsigned char *)malloc\
+			BM->buffer = (unsigned char *)malloc\
 				(sizeof(unsigned char) * (HEIGHT) * (WIDTH));\
-			IB->height = HEIGHT;\
-			IB->width = WIDTH;\
+			BM->height = HEIGHT;\
+			BM->width = WIDTH;\
 		     }while(0)
 
 /* Strukturen */
@@ -38,10 +38,12 @@ int release_intern_bitmap(struct intern_bitmap *bm);
 
 struct intern_bitmap *preprocess(IplImage *src);
 
-struct intern_bitmap *cvmat2intern(CvMat *mat);
-
-static CvMat *intern2cvmat(struct intern_bitmap *bm);
+struct intern_bitmap *bm_cvmat2bm(CvMat *mat);
 
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge);
+
+/*CvMat *bm_bm2cvmat_kontrast(struct intern_bitmap *bm);*/
+
+CvMat *bm_bm2cvmat_cp(struct intern_bitmap *bm);
 
 #endif /*__OCR__H__*/

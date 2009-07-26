@@ -34,13 +34,48 @@ int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 	return pixelvalue;
 }
 
-struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org, int new_width, int new_height)
+struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm, int new_height, int new_width)
 {
+	int i,j;
+	struct intern_bitmap *neu_bm;
+	/*float verhaeltnis_width, verhaeltnis_height;*/
+
 	if (new_width <= 0 || new_height <= 0)
 		return NULL;
+
+	BM_ALLOC(neu_bm, new_height, new_width);
+	
+	/* initialisieren */
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			bm_setpixel(neu_bm, i, j, 0);
+		}
+	}
+
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			/* vermeiden die Float operation!! */
+			int pixel;
+			pixel = bm_getpixel(org_bm,
+					i * org_bm->height / new_height,
+					j * org_bm->width / new_width);
+			bm_setpixel(neu_bm, i, j, pixel);
+		}
+	}
+	
+	#ifdef DEBUG
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			printf("%c",bm_getpixel(neu_bm, i, j) == 0 ? ' ' : 'X');
+		}
+		printf("\n");
+	}
+	#endif
+
+	return neu_bm;
 }
 
-int release_intern_bitmap(struct intern_bitmap *bm)
+int bm_release(struct intern_bitmap *bm)
 {
 	if (bm) {
 		if (bm->buffer) {
@@ -51,32 +86,7 @@ int release_intern_bitmap(struct intern_bitmap *bm)
 	return 0;
 }
 
-/* Die Umwandlung zwischen OpenCV und intern_bitmap */
-struct intern_bitmap *preprocess(IplImage *src)
-{
-	CvMat *mat;
-	struct intern_bitmap *bm;
-
-
-	mat = cvCreateMat(src->height, src->width, CV_8UC1);
-
-	/* binärisieren : */
-	cvAdaptiveThreshold(src, mat, 255, CV_ADAPTIVE_THRESH_MEAN_C,
-						CV_THRESH_BINARY_INV, 35, 37);
-	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
-
-	#ifdef DEBUG
-	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-	cvShowImage("Demo Window", mat);
-	cvWaitKey(-1);
-	cvDestroyWindow("Demo Window");
-	#endif
-	bm = cvmat2intern(mat);
-	cvReleaseMat(&mat);
-	return bm;
-}
-
-struct intern_bitmap *cvmat2intern(CvMat *mat)
+struct intern_bitmap *bm_cvmat2bm(const CvMat *mat)
 {
 	struct intern_bitmap *bm;
 
@@ -112,13 +122,14 @@ struct intern_bitmap *cvmat2intern(CvMat *mat)
 	return bm;
 }
 
-static CvMat *intern2cvmat(struct intern_bitmap *bm)
+CvMat *bm_bm2cvmat_cp(const struct intern_bitmap *bm)
 {
+	/* die Puffer einfach kopieren */
 	CvMat *mat;
 	mat = cvCreateMat(bm->height, bm->width, CV_8UC1);
 	memcpy(mat->data.ptr, bm->buffer,
 			mat->height * mat->width * sizeof(unsigned char));
-
+	/*
 	#ifdef DEBUG
 	for(int i = 0; i < bm->height; i++) {
 		for (int j = 0; j < bm->width; j++) {
@@ -131,8 +142,54 @@ static CvMat *intern2cvmat(struct intern_bitmap *bm)
 	}
 	printf("\n\n");
 	#endif
+	*/
 
 	return mat;
+}
+
+static CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
+{
+	/* falls eine Zelle nicht 0, dann ist sie 255 , für Debug*/
+	CvMat *mat;
+	int i;
+	unsigned char *p;
+	
+	mat = bm_bm2cvmat_cp(bm);
+
+	for (i = 0, p = mat->data.ptr;
+	     i < mat->height * mat->width * sizeof(unsigned char);
+	     i++,p++) {
+		if (*p) *p = 255;
+	}
+
+
+	return mat;
+}
+
+
+/* Die Umwandlung zwischen OpenCV und intern_bitmap */
+struct intern_bitmap *preprocess(IplImage *src)
+{
+	CvMat *mat;
+	struct intern_bitmap *bm;
+
+
+	mat = cvCreateMat(src->height, src->width, CV_8UC1);
+
+	/* binärisieren : */
+	cvAdaptiveThreshold(src, mat, 255, CV_ADAPTIVE_THRESH_MEAN_C,
+						CV_THRESH_BINARY_INV, 35, 37);
+	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
+
+	#ifdef DEBUG
+	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+	cvShowImage("Demo Window", mat);
+	cvWaitKey(-1);
+	cvDestroyWindow("Demo Window");
+	#endif
+	bm = bm_cvmat2bm(mat);
+	cvReleaseMat(&mat);
+	return bm;
 }
 
 /*  ein einfachstes Trennungsschema */
@@ -155,6 +212,7 @@ static struct list_head*
 		}
 	}
 
+	/*
 	#ifdef DEBUG
 	printf("Projektiontrennung:\n");
 	for (i = 0; i < zeile->width; i++) {
@@ -162,6 +220,7 @@ static struct list_head*
 	}
 	printf("\n");
 	#endif
+	*/
 
 	zeichenliste = (struct list_head*)malloc(sizeof(struct list_head));
 	INIT_LIST_HEAD(zeichenliste);
@@ -180,7 +239,7 @@ static struct list_head*
 					(projektion[i + grenze])); grenze++);
 
 			/* ein neuer Knoten einzufügen  */
-			IB_ALLOC(p, zeile->height, grenze);
+			BM_ALLOC(p, zeile->height, grenze);
 			list_add_tail(&p->list, zeichenliste);
 
 			/* kopieren Daten von einzelnem Zeichen */
@@ -206,6 +265,7 @@ static struct list_head*
 
 	#ifdef DEBUG
 	/* Das Ergebnis anzeigen*/
+	/*
 	{
 		struct intern_bitmap *bm;
 		struct list_head *p;
@@ -213,11 +273,12 @@ static struct list_head*
 			bm = list_entry(p, struct intern_bitmap, list);
 			printf("DEBUG:%dx%d\n", bm->height, bm->width);
 			cvNamedWindow("Debug Window", CV_WINDOW_AUTOSIZE);
-			cvShowImage("Debug Window", intern2cvmat(bm));
+			cvShowImage("Debug Window", bm_bm2cvmat(bm));
 			cvWaitKey(-1);
 			cvDestroyWindow("Debug Window");
 		}
 	}
+	*/
 	#endif
 
 	return zeichenliste;
@@ -249,7 +310,7 @@ static struct list_head*
 			if (alt_zeilennummer + 1 != i) {
 				/* eine gültige zeile gefunden */
 				/* initialisieren und in die liste einfügen*/
-				IB_ALLOC(neuezeile, i - alt_zeilennummer - 1,
+				BM_ALLOC(neuezeile, i - alt_zeilennummer - 1,
 								bild->width);
 				list_add_tail(&neuezeile->list, zeilenliste);
 				/* Zeiledaten kopieren */
@@ -270,7 +331,12 @@ static struct list_head*
 				}
 			}
 			alt_zeilennummer = i;
+
+			/*
+			#ifdef DEBUG
 			printf("alt_zeilennummer: %d\n", alt_zeilennummer);
+			#endif
+			*/
 		}
 	}
 	return zeilenliste;
@@ -294,24 +360,61 @@ static struct list_head*
 						   struct intern_bitmap,
 						   list)
 				    );
-		list_splice_tail(zeichenliste, teil_zeichenliste);
+		//list_splice_tail(zeichenliste, teil_zeichenliste);
+		list_splice_tail(teil_zeichenliste, zeichenliste);
 		free(teil_zeichenliste);
 	}
 	free(zeilenliste);
+
+	return zeichenliste;
 }
 
+
+struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen) {
+	+++++++++
+}
+
+struct intern_bitmap* zeichen_standardisieren(const struct intern_bitmap* zeichen)
+{
+	struct intern_bitmap *zwieschen_bm, *gleichartig_bm;
+	zwieschen_bm = zeichen_umfang_schneiden(zeichen);
+	gleichartig_bm = bm_skalieren(bm, STANDARD_ZEICHEN_HEIGHT,
+					  STANDARD_ZEICHEN_WIDTH);
+	bm_release(zwieschen_bm);
+	return gleichartig_bm;
+}
 
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
 
-	struct intern_bitmap *bm;
-	struct list_head *zeichenliste;
+	struct intern_bitmap *bm, *standard_bm;
+	struct list_head *zeichenliste, *p;
 
 	bm = preprocess(src);
 
 	/*zeichenliste = projektion_spalten_trennen(bm);*/
 	zeichenliste = einfach_trennen(bm);
+	bm_release(bm);
+
+
+
+	list_for_each(p, zeichenliste) {
+		bm = list_entry(p, struct intern_bitmap, list);
+		standard_bm = zeichen_standardisieren(bm);
+		#ifdef DEBUG
+		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Demo Window",bm_bm2cvmat_cp(bm));
+		cvWaitKey(-1);
+		cvDestroyWindow("Demo Window");
+
+		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Demo Window",bm_bm2cvmat_cp(standard_bm));
+		cvWaitKey(-1);
+		cvDestroyWindow("Demo Window");
+		#endif
+		bm_release(standard_bm);
+	}
 
 	strcpy(ergebnis, "noch nicht implementiert");
 	return 0;

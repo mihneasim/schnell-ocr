@@ -11,10 +11,13 @@ all: hauptteil tester
 tags:
 	ctags -R `pkg-config --cflags opencv | sed -e 's/^.*-I\([^ \t]*\).*/\1/'` .
 
+distclean:clean
+	-rm tags
+
 clean:
 	-$(MAKE) -C ocr clean
 	-rm *.o tester 
-	-rm tags
+	#-rm tags
 
 ###############################################################
 hauptteil:

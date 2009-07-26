@@ -9,4 +9,8 @@
 #define OOPS() printf("OOPS\n");
 #endif /*OOPS*/
 
+
+#define STANDARD_ZEICHEN_WIDTH	100
+#define STANDARD_ZEICHEN_HEIGHT	100
+
 #endif /*__GLOBAL_H__*/
