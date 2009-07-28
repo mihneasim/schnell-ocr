@@ -34,16 +34,16 @@ int bm_getpixel(const struct intern_bitmap *bm, int row, int col);
 int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 						unsigned char pixelvalue);
 
-int release_intern_bitmap(struct intern_bitmap *bm);
+int bm_release(struct intern_bitmap *bm);
 
 struct intern_bitmap *preprocess(IplImage *src);
 
-struct intern_bitmap *bm_cvmat2bm(CvMat *mat);
+struct intern_bitmap *bm_cvmat2bm(const CvMat *mat);
 
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge);
 
 /*CvMat *bm_bm2cvmat_kontrast(struct intern_bitmap *bm);*/
 
-CvMat *bm_bm2cvmat_cp(struct intern_bitmap *bm);
+CvMat *bm_bm2cvmat_cp(const struct intern_bitmap *bm);
 
 #endif /*__OCR__H__*/

@@ -30,5 +30,5 @@ tester_depend := ocr/ocr.o
 tester: tester.o $(tester_depend)
 	$(CC) `pkg-config --libs opencv` $^ -o $@
 
-tester.o: tester.cpp
+tester.o: tester.cpp hauptteil
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I ocr  $< -c -o $@

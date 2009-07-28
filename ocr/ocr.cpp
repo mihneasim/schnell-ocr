@@ -34,7 +34,7 @@ int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 	return pixelvalue;
 }
 
-struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm, int new_height, int new_width)
+static struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm, int new_height, int new_width)
 {
 	int i,j;
 	struct intern_bitmap *neu_bm;
@@ -370,16 +370,96 @@ static struct list_head*
 }
 
 
-struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen) {
-	+++++++++
+struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen)
+{
+	struct intern_bitmap *neu_bm;
+	int i, j;
+	int oben, untern, links, rechts;
+	int width, height;
+	char continue_flag;
+	
+	
+	if (zeichen == NULL)
+		return NULL;
+
+	/* oben */
+	continue_flag = 1;
+	for (i = 0; i < zeichen->height; i++) {
+		for (j = 0; j < zeichen->width; j++) {
+			if (bm_getpixel(zeichen, i, j)) {
+				continue_flag = 0;
+				break;
+			}
+		}
+		if (!continue_flag) break;
+	}
+	/* einmalige Prüfung reicht */
+	if (i == zeichen->height && j == zeichen->width)
+		return NULL;
+	oben = i;
+	
+	/* untern */
+	continue_flag = 1;
+	for (i = zeichen->height - 1 ; i >= 0; i--) {
+		for (j = 0; j < zeichen->width; j++) {
+			if (bm_getpixel(zeichen, i, j)) {
+				continue_flag = 0;
+				break;
+			}
+		}
+		if (!continue_flag) break;
+	}
+	untern = i;
+	
+	/* links */
+	continue_flag = 1;
+	for (j = 0; j < zeichen->width; j++) {
+		for (i = 0; i < zeichen->height; i++) {
+			if (bm_getpixel(zeichen, i, j)) {
+				continue_flag = 0;
+				break;
+			}
+
+		}
+		if (!continue_flag) break;
+	}
+	links = j;
+	
+	/* rechts */
+	continue_flag = 1;
+	for (j = zeichen->width - 1; j >= 0; j--) {
+		for (i = 0; i < zeichen->height; i++) {
+			if (bm_getpixel(zeichen, i, j)) {
+				continue_flag = 0;
+				break;
+			}
+		}
+		if (!continue_flag) break;
+	}
+	rechts = j;
+	
+	/* neues Bitmap herstellen */
+	height = untern - oben + 1;
+	width = rechts - links + 1;
+	BM_ALLOC(neu_bm, height, width);
+	
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			bm_setpixel(neu_bm, i, j, 
+				    bm_getpixel(zeichen, oben + i, links + j)
+				   );
+		}
+	}
+
+	return neu_bm;
 }
 
 struct intern_bitmap* zeichen_standardisieren(const struct intern_bitmap* zeichen)
 {
 	struct intern_bitmap *zwieschen_bm, *gleichartig_bm;
 	zwieschen_bm = zeichen_umfang_schneiden(zeichen);
-	gleichartig_bm = bm_skalieren(bm, STANDARD_ZEICHEN_HEIGHT,
-					  STANDARD_ZEICHEN_WIDTH);
+	gleichartig_bm = bm_skalieren(zwieschen_bm, STANDARD_ZEICHEN_HEIGHT,
+						  STANDARD_ZEICHEN_WIDTH);
 	bm_release(zwieschen_bm);
 	return gleichartig_bm;
 }
