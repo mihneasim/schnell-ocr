@@ -6,6 +6,7 @@
 #include <cxcore.h>
 
 #include "list.h"
+#include "global.h"
 
 /* Makros */
 
@@ -45,5 +46,7 @@ int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge);
 /*CvMat *bm_bm2cvmat_kontrast(struct intern_bitmap *bm);*/
 
 CvMat *bm_bm2cvmat_cp(const struct intern_bitmap *bm);
+
+int lernen_zeichen(int *vektor, struct intern_bitmap *zeichen);
 
 #endif /*__OCR__H__*/

@@ -25,9 +25,9 @@ hauptteil:
 	
 ###############################################################
 
-tester_depend := ocr/ocr.o
+hauptteil_obj := ocr/ocr.o
 
-tester: tester.o $(tester_depend)
+tester: tester.o $(hauptteil_obj)
 	$(CC) `pkg-config --libs opencv` $^ -o $@
 
 tester.o: tester.cpp hauptteil

@@ -5,74 +5,91 @@
 #include <cv.h>
 #include <cxcore.h>
 
-
-#include "global.h"
 #include "ocr.h"
 
 /* Diese Datei enthält den Teil, den direkt mit Benutzer kommunizieren.
  * Sie bietet die Haupt Routine (Schnittstelle) an.
  */
 
-/*die Operationen an den Datenstruktur intern_bitmap: */
+void ocr_error(char *msg)
+{
+	printf("%s\n",msg);
+	exit(127);
+}
+
+/******************************************************************************/
+/*
+ * hier fängt die Operationen an,
+ * die die Datenstruktur intern_bitmap bearbeiten
+ *
+ */
+
 int bm_getpixel(const struct intern_bitmap *bm, int row, int col)
 {
 	/* es wird angenommen, dass der Puffer von intern_bitmap
 	 * der unsigned char typ ist */
 
 	/* row und col fängt mit 0 an */
-	if ((col >= bm->width) || (row >= bm->height))
+	if ((col >= bm->width) || (row >= bm->height)) {
+		ocr_error("bm_getpixel: unrichtige Anforderung");
 		return  256;
+	}
 	return bm->buffer[row * bm->width + col];
 }
 
 int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 						unsigned char pixelvalue)
 {
-	if ((col >= bm->width) || (row >= bm->height))
+	if ((col >= bm->width) || (row >= bm->height)) {
+		ocr_error("bm_getpixel: unrichtige Anforderung");
 		return 256;
+	}
 	bm->buffer[row * bm->width + col] = pixelvalue;
 	return pixelvalue;
 }
 
 static struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm, int new_height, int new_width)
 {
-	int i,j;
-	struct intern_bitmap *neu_bm;
-	/*float verhaeltnis_width, verhaeltnis_height;*/
+int i,j;
+struct intern_bitmap *neu_bm;
+/*float verhaeltnis_width, verhaeltnis_height;*/
 
-	if (new_width <= 0 || new_height <= 0)
-		return NULL;
+if (new_width <= 0 || new_height <= 0)
+	return NULL;
 
-	BM_ALLOC(neu_bm, new_height, new_width);
-	
-	/* initialisieren */
-	for (i = 0; i < new_height; i++) {
-		for (j = 0; j < new_width; j++) {
-			bm_setpixel(neu_bm, i, j, 0);
-		}
+BM_ALLOC(neu_bm, new_height, new_width);
+
+/* initialisieren */
+for (i = 0; i < new_height; i++) {
+	for (j = 0; j < new_width; j++) {
+		bm_setpixel(neu_bm, i, j, 0);
 	}
+}
 
-	for (i = 0; i < new_height; i++) {
-		for (j = 0; j < new_width; j++) {
-			/* vermeiden die Float operation!! */
-			int pixel;
-			pixel = bm_getpixel(org_bm,
-					i * org_bm->height / new_height,
-					j * org_bm->width / new_width);
-			bm_setpixel(neu_bm, i, j, pixel);
-		}
+for (i = 0; i < new_height; i++) {
+	for (j = 0; j < new_width; j++) {
+		/* vermeiden die Float operation!! */
+		int pixel;
+		pixel = bm_getpixel(org_bm,
+				i * org_bm->height / new_height,
+				j * org_bm->width / new_width);
+		bm_setpixel(neu_bm, i, j, pixel);
 	}
-	
-	#ifdef DEBUG
-	for (i = 0; i < new_height; i++) {
-		for (j = 0; j < new_width; j++) {
-			printf("%c",bm_getpixel(neu_bm, i, j) == 0 ? ' ' : 'X');
-		}
-		printf("\n");
-	}
-	#endif
+}
 
-	return neu_bm;
+/*
+#ifdef DEBUG
+printf("\n");
+for (i = 0; i < new_height; i++) {
+	for (j = 0; j < new_width; j++) {
+		printf("%c",bm_getpixel(neu_bm, i, j) == 0 ? ' ' : 'X');
+	}
+	printf("\n");
+}
+#endif
+*/
+
+return neu_bm;
 }
 
 int bm_release(struct intern_bitmap *bm)
@@ -122,7 +139,7 @@ struct intern_bitmap *bm_cvmat2bm(const CvMat *mat)
 	return bm;
 }
 
-CvMat *bm_bm2cvmat_cp(const struct intern_bitmap *bm)
+CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
 {
 	/* die Puffer einfach kopieren */
 	CvMat *mat;
@@ -154,7 +171,7 @@ static CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
 	int i;
 	unsigned char *p;
 	
-	mat = bm_bm2cvmat_cp(bm);
+	mat = bm_bm2cvmat(bm);
 
 	for (i = 0, p = mat->data.ptr;
 	     i < mat->height * mat->width * sizeof(unsigned char);
@@ -167,32 +184,12 @@ static CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
 }
 
 
-/* Die Umwandlung zwischen OpenCV und intern_bitmap */
-struct intern_bitmap *preprocess(IplImage *src)
-{
-	CvMat *mat;
-	struct intern_bitmap *bm;
 
-
-	mat = cvCreateMat(src->height, src->width, CV_8UC1);
-
-	/* binärisieren : */
-	cvAdaptiveThreshold(src, mat, 255, CV_ADAPTIVE_THRESH_MEAN_C,
-						CV_THRESH_BINARY_INV, 35, 37);
-	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
-
-	#ifdef DEBUG
-	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-	cvShowImage("Demo Window", mat);
-	cvWaitKey(-1);
-	cvDestroyWindow("Demo Window");
-	#endif
-	bm = bm_cvmat2bm(mat);
-	cvReleaseMat(&mat);
-	return bm;
-}
-
-/*  ein einfachstes Trennungsschema */
+/******************************************************************************/
+/*
+ * hier fängt  ein einfachstes Trennungsschema an 
+ *
+ */ 
 static struct list_head*
 		projektion_spalten_trennen(const struct intern_bitmap *zeile)
 {
@@ -233,7 +230,7 @@ static struct list_head*
 	/* zerlegen und kopieren die Zeile zu einzelnem Zeichen in einer Liste */
 	for (i = 0; i < zeile->width; i++) {
 		if (projektion[i] != 0) {
-			int grenze; /* relative verschieb zu i in der Zeile */
+			int grenze; /* relative verschiebung zu i in der Zeile */
 			struct intern_bitmap *p;
 			for (grenze = 0;((i + grenze < zeile->width) &&
 					(projektion[i + grenze])); grenze++);
@@ -370,7 +367,9 @@ static struct list_head*
 }
 
 
-struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen)
+/******************************************************************************/
+/* das Zeichen manipulieren: */
+static struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen)
 {
 	struct intern_bitmap *neu_bm;
 	int i, j;
@@ -464,6 +463,33 @@ struct intern_bitmap* zeichen_standardisieren(const struct intern_bitmap* zeiche
 	return gleichartig_bm;
 }
 
+
+/******************************************************************************/
+struct intern_bitmap *preprocess(IplImage *src)
+{
+	/* Die Umwandlung zwischen OpenCV und intern_bitmap */
+	CvMat *mat;
+	struct intern_bitmap *bm;
+
+
+	mat = cvCreateMat(src->height, src->width, CV_8UC1);
+
+	/* binärisieren : */
+	cvAdaptiveThreshold(src, mat, 255, CV_ADAPTIVE_THRESH_MEAN_C,
+						CV_THRESH_BINARY_INV, 35, 37);
+	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
+
+	#ifdef DEBUG
+	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+	cvShowImage("Demo Window", mat);
+	cvWaitKey(-1);
+	cvDestroyWindow("Demo Window");
+	#endif
+	bm = bm_cvmat2bm(mat);
+	cvReleaseMat(&mat);
+	return bm;
+}
+
 int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
@@ -480,22 +506,159 @@ int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 
 
 	list_for_each(p, zeichenliste) {
+		int vektor[ZEICHEN_VEKTOR_LAENGE];
 		bm = list_entry(p, struct intern_bitmap, list);
 		standard_bm = zeichen_standardisieren(bm);
+		/*
 		#ifdef DEBUG
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-		cvShowImage("Demo Window",bm_bm2cvmat_cp(bm));
+		cvShowImage("Demo Window",bm_bm2cvmat(bm));
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
 
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-		cvShowImage("Demo Window",bm_bm2cvmat_cp(standard_bm));
+		cvShowImage("Demo Window",bm_bm2cvmat(standard_bm));
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
 		#endif
+		*/
+		lernen_zeichen(vektor, standard_bm);
+
 		bm_release(standard_bm);
 	}
 
 	strcpy(ergebnis, "noch nicht implementiert");
 	return 0;
+}
+
+
+
+/******************************************************************************/
+static int vektor_generieren_oben(int *vektor, const struct intern_bitmap *zeichen)
+{
+	int i, j;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	for (j = 0; j < zeichen->width; j++ ) {
+		for (i = 0; i < zeichen->height; i++) {
+			if (bm_getpixel(zeichen,i ,j))
+				break;
+		}
+		vektor[verschiebung++] = i;
+	}
+	return verschiebung;
+}
+static int vektor_generieren_untern(int *vektor, const struct intern_bitmap *zeichen)
+{
+	int i, j;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	for (j = 0; j < zeichen->width; j++ ) {
+		for (i = zeichen->height - 1; i >= 0; i--) {
+			if (bm_getpixel(zeichen,i ,j))
+				break;
+		}
+		vektor[verschiebung++] = zeichen->height - i;
+	}
+	return verschiebung;
+}
+static int vektor_generieren_links(int *vektor, const struct intern_bitmap *zeichen)
+{
+	int i, j;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	for (i = 0; i < zeichen->height; i++) {
+		for (j = 0; j < zeichen->width; j++ ) {
+			if (bm_getpixel(zeichen,i ,j))
+				break;
+		}
+		vektor[verschiebung++] = j;
+	}
+	return verschiebung;
+}
+static int vektor_generieren_rechts(int *vektor, const struct intern_bitmap *zeichen)
+{
+	int i, j;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	for (i = 0; i < zeichen->height; i++) {
+		for (j = zeichen->width - 1; j >= 0; j-- ) {
+			if (bm_getpixel(zeichen,i ,j))
+				break;
+		}
+		vektor[verschiebung++] = zeichen->width - j;
+	}
+	return verschiebung;
+}
+
+int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen)
+{
+	/* vektor in Uhrzeigerrichtung von dem Zeichen generieren */
+	int laenge, verschiebung;
+	
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	laenge = vektor_generieren_oben(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechts(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+	
+	laenge = vektor_generieren_untern(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_links(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+	
+	return verschiebung;
+}
+
+
+/******************************************************************************/
+int lernen_zeichen(int *vektor, struct intern_bitmap *zeichen)
+{
+	/* annehmen ,
+	 * dass der Vektor eine Puffer hat ,
+	 * der größer als ZEICHEN_VEKTOR_LAENGE ist */
+	int vektor_laenge;
+
+	if (vektor == NULL) return 0;
+	
+	vektor_laenge = vektor_generieren(vektor, zeichen);
+	
+	#ifdef DEBUG
+	{
+		printf("Vektor:");
+		for (int i = 0; i < ZEICHEN_VEKTOR_LAENGE; i++) {
+			printf(" %d", vektor[i]);
+		}
+		printf("\n");
+
+		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Demo Window",bm_bm2cvmat(zeichen));
+		cvWaitKey(-1);
+		cvDestroyWindow("Demo Window");
+	}
+	#endif
+	
+
+	return vektor_laenge;
 }

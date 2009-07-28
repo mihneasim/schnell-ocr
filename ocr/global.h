@@ -10,7 +10,12 @@
 #endif /*OOPS*/
 
 
-#define STANDARD_ZEICHEN_WIDTH	100
-#define STANDARD_ZEICHEN_HEIGHT	100
+#define STANDARD_ZEICHEN_WIDTH	30
+#define STANDARD_ZEICHEN_HEIGHT	30
+/* Die Länge des Vektors, mit dem ein Zeichen beschrieben wird. */
+#define ZEICHEN_VEKTOR_LAENGE	( 2 * \
+					(STANDARD_ZEICHEN_WIDTH +\
+					STANDARD_ZEICHEN_HEIGHT)\
+				)
 
 #endif /*__GLOBAL_H__*/
