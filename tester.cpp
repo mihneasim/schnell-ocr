@@ -18,6 +18,7 @@ char ergebnis[ERGEBNIS_LAENGE];
 int main(int argc, char *argv[], char *env[])
 {
 	IplImage *src;
+	struct intern_bitmap *bm;
 
 	/* Argumente testen */
 	if (argc == 1) {
@@ -35,7 +36,9 @@ int main(int argc, char *argv[], char *env[])
 		return 1;
 	}
 	
-	ocr_bestpassend(src, ergebnis, ERGEBNIS_LAENGE);
+	bm = preprocess(src);
+	ocr_bestpassend(bm, ergebnis, ERGEBNIS_LAENGE);
+	bm_release(bm);
 	
 	printf("Ergebnis: %s\n", ergebnis);
 	

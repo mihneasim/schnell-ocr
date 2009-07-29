@@ -41,12 +41,18 @@ struct intern_bitmap *preprocess(IplImage *src);
 
 struct intern_bitmap *bm_cvmat2bm(const CvMat *mat);
 
-int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge);
+struct list_head*
+		einfach_trennen(const struct intern_bitmap *bild);
+
+struct intern_bitmap* zeichen_standardisieren(
+		const struct intern_bitmap* zeichen);
+
+int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge);
 
 /*CvMat *bm_bm2cvmat_kontrast(struct intern_bitmap *bm);*/
 
-CvMat *bm_bm2cvmat_cp(const struct intern_bitmap *bm);
+CvMat *bm_bm2cvmat(const struct intern_bitmap *bm);
 
-int lernen_zeichen(int *vektor, struct intern_bitmap *zeichen);
+int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen);
 
 #endif /*__OCR__H__*/

@@ -340,7 +340,7 @@ static struct list_head*
 }
 
 
-static struct list_head*
+struct list_head*
 		einfach_trennen(const struct intern_bitmap *bild)
 {
 	struct list_head  *p;
@@ -453,7 +453,8 @@ static struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap
 	return neu_bm;
 }
 
-struct intern_bitmap* zeichen_standardisieren(const struct intern_bitmap* zeichen)
+struct intern_bitmap* zeichen_standardisieren(
+		const struct intern_bitmap* zeichen)
 {
 	struct intern_bitmap *zwieschen_bm, *gleichartig_bm;
 	zwieschen_bm = zeichen_umfang_schneiden(zeichen);
@@ -490,14 +491,12 @@ struct intern_bitmap *preprocess(IplImage *src)
 	return bm;
 }
 
-int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
+int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
 
-	struct intern_bitmap *bm, *standard_bm;
+	struct intern_bitmap *standard_bm;
 	struct list_head *zeichenliste, *p;
-
-	bm = preprocess(src);
 
 	/*zeichenliste = projektion_spalten_trennen(bm);*/
 	zeichenliste = einfach_trennen(bm);
@@ -506,7 +505,6 @@ int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 
 
 	list_for_each(p, zeichenliste) {
-		int vektor[ZEICHEN_VEKTOR_LAENGE];
 		bm = list_entry(p, struct intern_bitmap, list);
 		standard_bm = zeichen_standardisieren(bm);
 		/*
@@ -522,8 +520,6 @@ int ocr_bestpassend(IplImage *src, char *ergebnis, int laenge)
 		cvDestroyWindow("Demo Window");
 		#endif
 		*/
-		lernen_zeichen(vektor, standard_bm);
-
 		bm_release(standard_bm);
 	}
 
@@ -632,33 +628,3 @@ int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen)
 }
 
 
-/******************************************************************************/
-int lernen_zeichen(int *vektor, struct intern_bitmap *zeichen)
-{
-	/* annehmen ,
-	 * dass der Vektor eine Puffer hat ,
-	 * der größer als ZEICHEN_VEKTOR_LAENGE ist */
-	int vektor_laenge;
-
-	if (vektor == NULL) return 0;
-	
-	vektor_laenge = vektor_generieren(vektor, zeichen);
-	
-	#ifdef DEBUG
-	{
-		printf("Vektor:");
-		for (int i = 0; i < ZEICHEN_VEKTOR_LAENGE; i++) {
-			printf(" %d", vektor[i]);
-		}
-		printf("\n");
-
-		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-		cvShowImage("Demo Window",bm_bm2cvmat(zeichen));
-		cvWaitKey(-1);
-		cvDestroyWindow("Demo Window");
-	}
-	#endif
-	
-
-	return vektor_laenge;
-}
