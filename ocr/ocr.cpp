@@ -11,9 +11,9 @@
  * Sie bietet die Haupt Routine (Schnittstelle) an.
  */
 
-void ocr_error(char *msg)
+void ocr_error(const char *msg)
 {
-	printf("%s\n",msg);
+	printf("%s\n", msg);
 	exit(127);
 }
 
@@ -174,7 +174,7 @@ static CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
 	mat = bm_bm2cvmat(bm);
 
 	for (i = 0, p = mat->data.ptr;
-	     i < mat->height * mat->width * sizeof(unsigned char);
+	     i < mat->height * mat->width * (int)sizeof(unsigned char);
 	     i++,p++) {
 		if (*p) *p = 255;
 	}
@@ -566,7 +566,7 @@ static int vektor_generieren_untern(int *vektor, const struct intern_bitmap *zei
 			if (bm_getpixel(zeichen,i ,j))
 				break;
 		}
-		vektor[verschiebung++] = zeichen->height - i;
+		vektor[verschiebung++] = zeichen->height - i - 1;
 	}
 	return verschiebung;
 }
@@ -602,7 +602,7 @@ static int vektor_generieren_rechts(int *vektor, const struct intern_bitmap *zei
 			if (bm_getpixel(zeichen,i ,j))
 				break;
 		}
-		vektor[verschiebung++] = zeichen->width - j;
+		vektor[verschiebung++] = zeichen->width - j - 1;
 	}
 	return verschiebung;
 }
