@@ -6,7 +6,7 @@ MAKEFILE=Makefile
 
 CFLAGS:=$(CFLAGS) -g
 
-all: hauptteil tester
+all: hauptteil tools
 
 tags:
 	ctags -R `pkg-config --cflags opencv | sed -e 's/^.*-I\([^ \t]*\).*/\1/'` .
@@ -16,7 +16,7 @@ distclean:clean
 
 clean:
 	-$(MAKE) -C ocr clean
-	-rm *.o tester 
+	-$(MAKE) -C tools clean
 	#-rm tags
 
 ###############################################################
@@ -25,10 +25,5 @@ hauptteil:
 	
 ###############################################################
 
-hauptteil_obj := ocr/ocr.o
-
-tester: tester.o $(hauptteil_obj)
-	$(CC) `pkg-config --libs opencv` $^ -o $@
-
-tester.o: tester.cpp hauptteil
-	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I ocr  $< -c -o $@
+tools:
+	CFLAGS="$(CFLAGS)" $(MAKE) -C tools

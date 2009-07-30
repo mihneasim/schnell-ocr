@@ -11,6 +11,8 @@
  * Sie bietet die Haupt Routine (Schnittstelle) an.
  */
 
+#define ocr_abs abs
+
 void ocr_error(const char *msg)
 {
 	printf("%s\n", msg);
@@ -480,12 +482,14 @@ struct intern_bitmap *preprocess(IplImage *src)
 						CV_THRESH_BINARY_INV, 35, 37);
 	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
 
+	/*
 	#ifdef DEBUG
 	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 	cvShowImage("Demo Window", mat);
 	cvWaitKey(-1);
 	cvDestroyWindow("Demo Window");
 	#endif
+	*/
 	bm = bm_cvmat2bm(mat);
 	cvReleaseMat(&mat);
 	return bm;
@@ -530,7 +534,7 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 
 
 /******************************************************************************/
-static int vektor_generieren_oben(int *vektor, const struct intern_bitmap *zeichen)
+static int vektor_generieren_oben(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	int i, j;
 	int verschiebung;
@@ -548,7 +552,7 @@ static int vektor_generieren_oben(int *vektor, const struct intern_bitmap *zeich
 	}
 	return verschiebung;
 }
-static int vektor_generieren_untern(int *vektor, const struct intern_bitmap *zeichen)
+static int vektor_generieren_untern(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	int i, j;
 	int verschiebung;
@@ -566,7 +570,7 @@ static int vektor_generieren_untern(int *vektor, const struct intern_bitmap *zei
 	}
 	return verschiebung;
 }
-static int vektor_generieren_links(int *vektor, const struct intern_bitmap *zeichen)
+static int vektor_generieren_links(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	int i, j;
 	int verschiebung;
@@ -584,7 +588,7 @@ static int vektor_generieren_links(int *vektor, const struct intern_bitmap *zeic
 	}
 	return verschiebung;
 }
-static int vektor_generieren_rechts(int *vektor, const struct intern_bitmap *zeichen)
+static int vektor_generieren_rechts(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	int i, j;
 	int verschiebung;
@@ -603,7 +607,7 @@ static int vektor_generieren_rechts(int *vektor, const struct intern_bitmap *zei
 	return verschiebung;
 }
 
-int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen)
+int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	/* vektor in Uhrzeigerrichtung von dem Zeichen generieren */
 	int laenge, verschiebung;
@@ -627,4 +631,17 @@ int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen)
 	return verschiebung;
 }
 
+long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
+{
+	int i;
+	long ergebnis;
+	
+	/* für die Sicherheit:*/
+	if (laenge > ZEICHEN_VEKTOR_LAENGE) return -1;
+	
+	for (i = 0; i < laenge; i++) {
+		ergebnis += ocr_abs(vektor[i] - vektor_muster[i]);
+	}
 
+	return ergebnis;
+}

@@ -10,6 +10,8 @@
 
 /* Makros */
 
+typedef int vektor_t;
+
 #define BM_ALLOC(BM,HEIGHT,WIDTH) do{\
 			BM = (struct intern_bitmap *) \
 				malloc(sizeof(struct intern_bitmap));\
@@ -30,6 +32,9 @@ struct intern_bitmap {
 
 
 /* Funktionen */
+
+void ocr_error(const char *msg);
+
 int bm_getpixel(const struct intern_bitmap *bm, int row, int col);
 
 int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
@@ -53,6 +58,6 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge);
 
 CvMat *bm_bm2cvmat(const struct intern_bitmap *bm);
 
-int vektor_generieren(int *vektor, const struct intern_bitmap *zeichen);
+int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen);
 
 #endif /*__OCR__H__*/

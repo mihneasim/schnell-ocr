@@ -17,5 +17,4 @@
 					(STANDARD_ZEICHEN_WIDTH +\
 					STANDARD_ZEICHEN_HEIGHT)\
 				)
-
 #endif /*__GLOBAL_H__*/
