@@ -12,6 +12,12 @@
 
 typedef int vektor_t;
 
+/* die Struktur kann total groß sein,  vorsichtig auf dem Stack! */
+struct zeichenvektor {
+	char zeichen_puffer[ENCODE_LAENGE]; /* ein NULL endet zeichenkette*/
+	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
+};
+
 #define BM_ALLOC(BM,HEIGHT,WIDTH) do{\
 			BM = (struct intern_bitmap *) \
 				malloc(sizeof(struct intern_bitmap));\
@@ -59,5 +65,7 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge);
 CvMat *bm_bm2cvmat(const struct intern_bitmap *bm);
 
 int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen);
+
+long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge);
 
 #endif /*__OCR__H__*/

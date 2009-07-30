@@ -17,4 +17,8 @@
 					(STANDARD_ZEICHEN_WIDTH +\
 					STANDARD_ZEICHEN_HEIGHT)\
 				)
+
+ /* maximale Laenge von eines Zeichens plus das NULL Ende */
+#define ENCODE_LAENGE (6+2)
+
 #endif /*__GLOBAL_H__*/

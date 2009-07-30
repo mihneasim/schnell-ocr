@@ -2,7 +2,8 @@
 use strict;
 # annehmen, dass die eingangsdaten auf jedem Fall richtig ist
 
-print "\nstruct zeichen_vektor daten_muster[] = {\n";
+#print "#include \"ocr.h\"\n";
+print "\nstruct zeichenvektor daten_muster[] = {\n";
 
 our ($name, $val, $i);
 
@@ -13,8 +14,9 @@ $i = 0;
 while (1){
 	$val = <>;
 	chomp($val);
-	$val =~ s/ /,/g;
-	print '{"', $name, '", {', $val, "}";
+	$val =~ s/ /, /g;
+	#print '{"', $name, '", {', $val, "}";
+	print '{"', $name, '", {', $val, "}}";
 	$i++;
 	$name = <>;
 	if (defined($name)) {

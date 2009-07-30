@@ -7,11 +7,19 @@
 
 #include "ocr.h"
 
+/* für Debug: */
+#include "../muster.c"
+
+
 /* Diese Datei enthält den Teil, den direkt mit Benutzer kommunizieren.
  * Sie bietet die Haupt Routine (Schnittstelle) an.
  */
 
-#define ocr_abs abs
+//#define ocr_abs abs
+inline int ocr_abs(int a)
+{
+	return a > 0 ? a : -a;
+}
 
 void ocr_error(const char *msg)
 {
@@ -498,21 +506,43 @@ struct intern_bitmap *preprocess(IplImage *src)
 int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
+	
+	if (laenge <= 1) return -1;
+	
+	ergebnis[0] = '\0';
+	
+	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
+	int kleinst, zurzeit, kleinst_index;
 
 	struct intern_bitmap *standard_bm;
 	struct list_head *zeichenliste, *p;
 
 	/*zeichenliste = projektion_spalten_trennen(bm);*/
 	zeichenliste = einfach_trennen(bm);
-	bm_release(bm);
-
-
+	/*bm_release(bm);*/ /* das wird außer dieser Funktion getan */
 
 	list_for_each(p, zeichenliste) {
 		bm = list_entry(p, struct intern_bitmap, list);
 		standard_bm = zeichen_standardisieren(bm);
-		/*
+		vektor_generieren(vektor, standard_bm);
+
+		kleinst = STANDARD_ZEICHEN_WIDTH * ZEICHEN_VEKTOR_LAENGE * 4 + 1;
+		kleinst_index = 0;
+
+		for (int i = 0; i < ZEICHEN_MUSTER_MENGE; i++) {
+			printf("%05d %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE), daten_muster[i].zeichen_puffer);
+			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE);
+			printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
+			if (zurzeit < kleinst) {
+				kleinst = zurzeit;
+				kleinst_index = i;
+				OOPS();
+			}
+		}
+		strcat(ergebnis, daten_muster[kleinst_index].zeichen_puffer);
+		//+++++++++
 		#ifdef DEBUG
+		printf("%s\n", daten_muster[kleinst_index].zeichen_puffer);
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Demo Window",bm_bm2cvmat(bm));
 		cvWaitKey(-1);
@@ -523,11 +553,10 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
 		#endif
-		*/
 		bm_release(standard_bm);
 	}
 
-	strcpy(ergebnis, "noch nicht implementiert");
+	//strcpy(ergebnis, "noch nicht implementiert");
 	return 0;
 }
 
@@ -639,7 +668,10 @@ long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
 	/* für die Sicherheit:*/
 	if (laenge > ZEICHEN_VEKTOR_LAENGE) return -1;
 	
+	ergebnis = 0;
+	
 	for (i = 0; i < laenge; i++) {
+		//printf("| %d - %d | = %d\n", vektor[i], vektor_muster[i], ocr_abs(vektor[i] - vektor_muster[i]));
 		ergebnis += ocr_abs(vektor[i] - vektor_muster[i]);
 	}
 
