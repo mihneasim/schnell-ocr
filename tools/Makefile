@@ -1,7 +1,7 @@
 .PHONY: all clean
 
-ocr_path:=../ocr
-ocr_objs=$(OCR_PATH)/ocr.o
+ocr_path=../ocr
+ocr_objs=$(ocr_path)/ocr.o
 #ocr_sources:=$(OCR_PATH)/ocr.cpp
 
 all:lernen tester
@@ -14,12 +14,12 @@ clean:
 lernen.o: lernen.cpp
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I $(ocr_path)  $< -c -o $@
 
-lernen: lernen.o 
-	$(CC) $(CFLAGS) `pkg-config --libs opencv` $^ $(ocr_path)/ocr.o -o $@
+lernen: lernen.o $(ocr_objs)
+	$(CC) $(CFLAGS) `pkg-config --libs opencv` $^  -o $@
 
 
 tester: tester.o $(ocr_objs)
 	$(CC) `pkg-config --libs opencv` $^ -o $@
 
 tester.o: tester.cpp 
-	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I ocr  $< -c -o $@
+	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I $(ocr_path) $< -c -o $@

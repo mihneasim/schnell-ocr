@@ -1,6 +1,6 @@
 CFLAGS= -Wall -O2 -march=nocona -pipe -fomit-frame-pointer -mmmx -msse -msse2 -msse3
 
-.PHONY: all tags clean
+.PHONY: all tags clean tools hauptteil
 
 MAKEFILE=Makefile
 
