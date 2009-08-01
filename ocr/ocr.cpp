@@ -504,12 +504,14 @@ struct intern_bitmap *preprocess(IplImage *src)
 						CV_THRESH_BINARY_INV, 35, 37);
 	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
 
+	/*
 	#ifdef DEBUG
 	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 	cvShowImage("Demo Window", mat);
 	cvWaitKey(-1);
 	cvDestroyWindow("Demo Window");
 	#endif
+	*/
 
 	bm = bm_cvmat2bm(mat);
 	cvReleaseMat(&mat);
@@ -548,7 +550,7 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 		for (int i = 0; i < ZEICHEN_MUSTER_MENGE; i++) {
 			printf("%05ld %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE), daten_muster[i].zeichen_puffer);
 			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE);
-			printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
+			//printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
 			if (zurzeit < kleinst) {
 				kleinst = zurzeit;
 				kleinst_index = i;

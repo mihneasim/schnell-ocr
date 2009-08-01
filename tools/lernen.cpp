@@ -9,6 +9,23 @@
 #include "ocr.h"
 
 
+int chomp(char *str)
+{
+	int i;
+	for (i = 0; str[i]; i++);
+	while ((i > 0) && (
+			   (str[i - 1] == ' ')
+			|| (str[i - 1] == '\t')
+			|| (str[i - 1] == '\n')
+			|| (str[i - 1] == '\r')
+			  )
+	      ) {
+
+		i--;
+	}
+	str[i] = 0;
+	return i;
+}
 
 int vektor[ZEICHEN_VEKTOR_LAENGE];
 
@@ -53,7 +70,7 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 
 	zeichenliste = einfach_trennen(text_bm);
 	
-	f_vektor = fopen("vektor.txt","wa");
+	f_vektor = fopen("vektor.txt","a+");
 	if (!f_vektor) {
 		ocr_error("Datei konnte nicht geöffnet werden");
 	}
@@ -66,12 +83,16 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 
 		cvNamedWindow("Zeigensfenster", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Zeigensfenster",bm_bm2cvmat(standard_bm));
-		cvWaitKey(-1);
+		str[0] = cvWaitKey(-1);
+		str[1] = 0;
 		cvDestroyWindow("Zeigensfenster");
-		printf("Das ist ");
-		fgets(str,9,stdin);
 
-		fprintf(f_vektor, "%s", str);
+		printf("Das ist ");
+		//fgets(str,9,stdin);
+		chomp(str);
+		printf("%c\n",str[0]);
+
+		fprintf(f_vektor, "%s\n", str);
 		for (i = 0; i < ZEICHEN_VEKTOR_LAENGE; i++) {
 			fprintf(f_vektor, "%d ", vektor[i]);
 		}
