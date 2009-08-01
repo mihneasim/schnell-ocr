@@ -38,17 +38,18 @@ int main(int argc, char *argv[], char *env[])
 			return 1;
 		}
 		
+		/* das original Bild anzeigen */
+		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Demo Window", src);
+		cvWaitKey(-1);
+		cvDestroyWindow("Demo Window");
+
 		bm = preprocess(src);
 		ocr_bestpassend(bm, ergebnis, ERGEBNIS_LAENGE);
 		bm_release(bm);
 		
 		printf("Ergebnis: %s\n", ergebnis);
 		
-		/* das original Bild anzeigen */
-		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-		cvShowImage("Demo Window", src);
-		cvWaitKey(-1);
-		cvDestroyWindow("Demo Window");
 	}
 	return 0;
 }

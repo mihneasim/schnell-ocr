@@ -86,6 +86,7 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 
 int main(int argc, char *argv[], char *env[])
 {
+	int i;
 	struct intern_bitmap *bm;
 	IplImage *src;
 
@@ -98,24 +99,26 @@ int main(int argc, char *argv[], char *env[])
 	/* init OpenCV */
 	cvInitSystem(argc, argv);
 	
-	/* Bild Lesen */
-	src = cvLoadImage(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
-	if (!src) {
-		printf("Error: cvLoadImage()\n");
-		return 1;
+	for (i = 1; i < argc; i++ ) {
+		/* Bild Lesen */
+		src = cvLoadImage(argv[i], CV_LOAD_IMAGE_GRAYSCALE);
+		if (!src) {
+			printf("Error: cvLoadImage()\n");
+			return 1;
+		}
+		
+		bm = preprocess(src);
+		lernen_text_pro_zeichen(bm);
+		bm_release(bm);
+		
+		/* das original Bild anzeigen */
+		/*
+		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Demo Window", src);
+		cvWaitKey(-1);
+		cvDestroyWindow("Demo Window");
+		*/
 	}
-	
-	bm = preprocess(src);
-	lernen_text_pro_zeichen(bm);
-	bm_release(bm);
-	
-	/* das original Bild anzeigen */
-	/*
-	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
-	cvShowImage("Demo Window", src);
-	cvWaitKey(-1);
-	cvDestroyWindow("Demo Window");
-	*/
 
 	return 0;
 }

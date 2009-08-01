@@ -21,6 +21,11 @@ inline int ocr_abs(int a)
 	return a > 0 ? a : -a;
 }
 
+inline long lquadrat(long a)
+{
+	return a*a;
+}
+
 void ocr_error(const char *msg)
 {
 	printf("%s\n", msg);
@@ -476,6 +481,15 @@ struct intern_bitmap* zeichen_standardisieren(
 
 
 /******************************************************************************/
+
+static int rauschen_entfernen(const struct intern_bitmap *bm)
+{
+	int rauschen_ventil;
+	rauschen_ventil = 1;
+	/* bla bla.. +++++++ noch nicht fertig */ 
+	return rauschen_ventil;
+}
+
 struct intern_bitmap *preprocess(IplImage *src)
 {
 	/* Die Umwandlung zwischen OpenCV und intern_bitmap */
@@ -490,16 +504,18 @@ struct intern_bitmap *preprocess(IplImage *src)
 						CV_THRESH_BINARY_INV, 35, 37);
 	/* nun ist 'mat' eine binäre Matrix, die 0xFF und 0 enthält */
 
-	/*
 	#ifdef DEBUG
 	cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 	cvShowImage("Demo Window", mat);
 	cvWaitKey(-1);
 	cvDestroyWindow("Demo Window");
 	#endif
-	*/
+
 	bm = bm_cvmat2bm(mat);
 	cvReleaseMat(&mat);
+	
+	rauschen_entfernen(bm);
+
 	return bm;
 }
 
@@ -530,7 +546,7 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 		kleinst_index = 0;
 
 		for (int i = 0; i < ZEICHEN_MUSTER_MENGE; i++) {
-			printf("%05d %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE), daten_muster[i].zeichen_puffer);
+			printf("%05ld %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE), daten_muster[i].zeichen_puffer);
 			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE);
 			printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
 			if (zurzeit < kleinst) {
@@ -672,7 +688,7 @@ long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
 	
 	for (i = 0; i < laenge; i++) {
 		//printf("| %d - %d | = %d\n", vektor[i], vektor_muster[i], ocr_abs(vektor[i] - vektor_muster[i]));
-		ergebnis += ocr_abs(vektor[i] - vektor_muster[i]);
+		ergebnis += lquadrat(ocr_abs(vektor[i] - vektor_muster[i]));
 	}
 
 	return ergebnis;
