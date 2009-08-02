@@ -576,15 +576,17 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 			}
 		}
 		
-		printf("DEBUG: note = %d\n", kleinst);
+		printf("%s kennbarkeit = -%d\n", daten_muster[kleinst_index].zeichen_puffer, kleinst);
 		strcat(ergebnis, daten_muster[kleinst_index].zeichen_puffer);
 		//+++++++++
 		#ifdef DEBUG
+		/*
 		printf("%s\n", daten_muster[kleinst_index].zeichen_puffer);
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Demo Window",bm_bm2cvmat(bm));
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
+		*/
 
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Demo Window",bm_bm2cvmat(standard_bm));
