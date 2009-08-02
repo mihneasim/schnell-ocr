@@ -47,6 +47,8 @@ int main(int argc, char *argv[], char *env[])
 		bm = preprocess(src);
 		ocr_bestpassend(bm, ergebnis, ERGEBNIS_LAENGE);
 		bm_release(bm);
+
+		cvReleaseData(src);
 		
 		printf("Ergebnis: %s\n", ergebnis);
 		

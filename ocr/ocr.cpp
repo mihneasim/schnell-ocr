@@ -179,7 +179,7 @@ CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
 	return mat;
 }
 
-static CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
+/*static*/ CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
 {
 	/* falls eine Zelle nicht 0, dann ist sie 255 , für Debug*/
 	CvMat *mat;
@@ -267,7 +267,7 @@ static struct list_head*
 					    bm_getpixel(zeile, j, i + ii));
 				}
 			}
-			printf("grenze: %d\n",grenze);
+			//printf("grenze: %d\n",grenze);
 
 			i += grenze;
 		}
@@ -392,6 +392,9 @@ static struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap
 	int width, height;
 	char continue_flag;
 	
+	/* für Compiler Warnen: */
+	j = 0;
+	/* -------------------- */
 	
 	if (zeichen == NULL)
 		return NULL;
@@ -476,6 +479,22 @@ struct intern_bitmap* zeichen_standardisieren(
 	gleichartig_bm = bm_skalieren(zwieschen_bm, STANDARD_ZEICHEN_HEIGHT,
 						  STANDARD_ZEICHEN_WIDTH);
 	bm_release(zwieschen_bm);
+
+	/*
+	#ifdef DEBUG
+	for(int i = 0; i < gleichartig_bm->height; i++) {
+		for (int j = 0; j < gleichartig_bm->width; j++) {
+			if (bm_getpixel(gleichartig_bm, i, j))
+				printf("X");
+			else
+				printf(" ");
+		}
+		printf("\n");
+	}
+	printf("\n\n");
+	#endif
+	*/
+
 	return gleichartig_bm;
 }
 
@@ -524,17 +543,17 @@ struct intern_bitmap *preprocess(IplImage *src)
 int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
+	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
+	int kleinst, zurzeit, kleinst_index;
+	int vektor_laenge;
+	struct intern_bitmap *standard_bm;
+	struct list_head *zeichenliste, *p;
+
 	
 	if (laenge <= 1) return -1;
 	
 	ergebnis[0] = '\0';
 	
-	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
-	int kleinst, zurzeit, kleinst_index;
-
-	struct intern_bitmap *standard_bm;
-	struct list_head *zeichenliste, *p;
-
 	/*zeichenliste = projektion_spalten_trennen(bm);*/
 	zeichenliste = einfach_trennen(bm);
 	/*bm_release(bm);*/ /* das wird außer dieser Funktion getan */
@@ -542,21 +561,22 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 	list_for_each(p, zeichenliste) {
 		bm = list_entry(p, struct intern_bitmap, list);
 		standard_bm = zeichen_standardisieren(bm);
-		vektor_generieren(vektor, standard_bm);
+		vektor_laenge = vektor_generieren(vektor, standard_bm);
 
-		kleinst = STANDARD_ZEICHEN_WIDTH * ZEICHEN_VEKTOR_LAENGE * 4 + 1;
+		kleinst = vektor_vergleichen(vektor, daten_muster[0].vektor, vektor_laenge);
 		kleinst_index = 0;
-
+		
 		for (int i = 0; i < ZEICHEN_MUSTER_MENGE; i++) {
-			printf("%05ld %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE), daten_muster[i].zeichen_puffer);
-			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, ZEICHEN_VEKTOR_LAENGE);
+			//printf("%05ld %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, vektor_laenge), daten_muster[i].zeichen_puffer);
+			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, vektor_laenge);
 			//printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
 			if (zurzeit < kleinst) {
 				kleinst = zurzeit;
 				kleinst_index = i;
-				OOPS();
 			}
 		}
+		
+		printf("DEBUG: note = %d\n", kleinst);
 		strcat(ergebnis, daten_muster[kleinst_index].zeichen_puffer);
 		//+++++++++
 		#ifdef DEBUG
@@ -581,8 +601,10 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 
 
 /******************************************************************************/
-static int vektor_generieren_oben(vektor_t *vektor, const struct intern_bitmap *zeichen)
+static int vektor_generieren_oben(vektor_t *vektor,
+				const struct intern_bitmap *zeichen)
 {
+	/* Abtastensrichtung nach untern */
 	int i, j;
 	int verschiebung;
 
@@ -599,8 +621,11 @@ static int vektor_generieren_oben(vektor_t *vektor, const struct intern_bitmap *
 	}
 	return verschiebung;
 }
-static int vektor_generieren_untern(vektor_t *vektor, const struct intern_bitmap *zeichen)
+
+static int vektor_generieren_untern(vektor_t *vektor,
+				const struct intern_bitmap *zeichen)
 {
+	/* Abtastensrichtung nach oben */
 	int i, j;
 	int verschiebung;
 
@@ -617,8 +642,11 @@ static int vektor_generieren_untern(vektor_t *vektor, const struct intern_bitmap
 	}
 	return verschiebung;
 }
-static int vektor_generieren_links(vektor_t *vektor, const struct intern_bitmap *zeichen)
+
+static int vektor_generieren_links(vektor_t *vektor,
+				const struct intern_bitmap *zeichen)
 {
+	/* Abtastensrichtung nach rechts */
 	int i, j;
 	int verschiebung;
 
@@ -635,8 +663,11 @@ static int vektor_generieren_links(vektor_t *vektor, const struct intern_bitmap 
 	}
 	return verschiebung;
 }
-static int vektor_generieren_rechts(vektor_t *vektor, const struct intern_bitmap *zeichen)
+
+static int vektor_generieren_rechts(vektor_t *vektor,
+				const struct intern_bitmap *zeichen)
 {
+	/* Abtastensrichtung nach links */
 	int i, j;
 	int verschiebung;
 
@@ -651,6 +682,208 @@ static int vektor_generieren_rechts(vektor_t *vektor, const struct intern_bitmap
 		}
 		vektor[verschiebung++] = zeichen->width - j - 1;
 	}
+	return verschiebung;
+}
+
+
+static int vektor_generieren_linksoben(vektor_t *vektor, 
+				const struct intern_bitmap *zeichen)
+{
+	/* Abtastensrichtung 45 Grad nach rechts untern */
+	int x, y;
+	int i;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	/* zuerst senkrecht, von untern nach oben */
+	
+	for (i = zeichen->height - 1; i >= 0; i--) {
+		x = 0;
+		y = i;
+		while ((x < zeichen->width) && (y < zeichen->height)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x++;
+			y++;
+		}
+		/* x ist die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = x;
+	}
+	
+	/* waagerecht von links nach rechts */
+	
+	/*for (i = 0; i < zeichen->width; i++) {*/
+	for (i = 1; i < zeichen->width; i++) {
+		x = i;
+		y = 0;
+		while ((x < zeichen->width) && (y < zeichen->height)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x++;
+			y++;
+		}
+
+		/* y ist die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = y;
+	}
+
+	return verschiebung;
+}
+
+static int vektor_generieren_rechtsoben(vektor_t *vektor, 
+				const struct intern_bitmap *zeichen)
+{
+	/* Abtastensrichtung 45 Grad nach links untern */
+	int x, y;
+	int i;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	/* zuerst waagerecht, von links nach rechts */
+	
+	for (i = 0; i < zeichen->width; i++) {
+		x = i;
+		y = 0;
+		while ((x >= 0) && (y < zeichen->height)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x--;
+			y++;
+		}
+
+		/* y ist die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = y;
+	}
+
+	/* senkrecht, von oben nach untern */
+	
+	/*for (i = 0; i < zeichen->height; i++) {*/
+	for (i = 1; i < zeichen->height; i++) {
+		x = zeichen->width - 1;
+		y = i;
+		while ((x >= 0) && (y < zeichen->height)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x--;
+			y++;
+		}
+		/* die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = y - i;
+	}
+	
+
+	return verschiebung;
+}
+
+
+static int vektor_generieren_rechtsuntern(vektor_t *vektor, 
+				const struct intern_bitmap *zeichen)
+{
+	/* Abtastensrichtung 45 Grad nach links oben */
+	int x, y;
+	int i;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	/* zuerst senkrecht, von oben nach untern */
+	
+	for (i = 0; i < zeichen->height; i++) {
+		x = zeichen->width - 1;
+		y = i;
+		while ((x >= 0) && (y >= 0)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x--;
+			y--;
+		}
+		/* die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = i - y;
+	}
+	
+	/* waagerecht von rechts nach links */
+	
+	/*for (i = zeichen->width - 1; i >= 0; i--) {*/
+	for (i = zeichen->width - 2; i >= 0; i--) {
+		x = i;
+		y = zeichen->height - 1;
+		while ((x >= 0) && (y >= 0)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x--;
+			y--;
+		}
+
+		/* die aktuellen Schritte, die der Schleifer läuft*/
+		/*printf("i = %d, x = %d\n", i, x);*/
+		vektor[verschiebung++] = i - x;
+	}
+
+	return verschiebung;
+}
+
+
+static int vektor_generieren_linksuntern(vektor_t *vektor, 
+				const struct intern_bitmap *zeichen)
+{
+	/* Abtastensrichtung 45 Grad nach rechts oben */
+	int x, y;
+	int i;
+	int verschiebung;
+
+	if (vektor == NULL) return 0;
+	
+	verschiebung = 0;
+
+	/* zuerst waagerecht von rechts nach links */
+	
+	for (i = zeichen->width - 1; i >=0;  i--) {
+		x = i;
+		y = zeichen->height - 1;
+		while ((x < zeichen->width) && (y >= 0)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x++;
+			y--;
+		}
+
+		/* die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = x - i;
+	}
+
+	/* senkrecht, von untern nach oben */
+	
+	/* for (i = zeichen->height - 1; i >= 0; i--) { */
+	for (i = zeichen->height - 2; i >= 0; i--) {
+		x = 0;
+		y = i;
+		while ((x < zeichen->width) && (y >= 0)) {
+			if (bm_getpixel(zeichen, y, x))
+				break;
+
+			x++;
+			y--;
+		}
+		/* x ist die aktuellen Schritte, die der Schleifer läuft*/
+		vektor[verschiebung++] = x;
+	}
+	
+
 	return verschiebung;
 }
 
@@ -674,7 +907,31 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 
 	laenge = vektor_generieren_links(&vektor[verschiebung], zeichen);
 	verschiebung += laenge;
-	
+
+	////////
+
+	laenge = vektor_generieren_linksoben(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechtsoben(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechtsuntern(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_linksuntern(&vektor[verschiebung], zeichen);
+	verschiebung += laenge;
+
+	/*
+	#ifdef DEBUG
+	printf("Debug: vektor_generieren():\n");
+	for (int i = 0; i < verschiebung; i++) {
+		printf("%d ",vektor[i]);
+	}
+	printf("\n\n");
+	#endif
+	*/
+
 	return verschiebung;
 }
 

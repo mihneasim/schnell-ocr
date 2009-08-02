@@ -14,6 +14,7 @@ $i = 0;
 while (1){
 	$val = <>;
 	chomp($val);
+	$val =~ s/\s+$//;
 	$val =~ s/ /, /g;
 	#print '{"', $name, '", {', $val, "}";
 	print '{"', $name, '", {', $val, "}}";

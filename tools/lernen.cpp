@@ -66,6 +66,7 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 	struct list_head *zeichenliste, *p;
 	struct intern_bitmap *bm, *standard_bm;
 	int i;
+	int vektor_laenge;
 	char str[10];
 
 	zeichenliste = einfach_trennen(text_bm);
@@ -79,7 +80,7 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 	list_for_each(p, zeichenliste) {
 		bm = list_entry(p, struct intern_bitmap, list);
 		standard_bm = zeichen_standardisieren(bm);
-		vektor_generieren(vektor, standard_bm);
+		vektor_laenge = vektor_generieren(vektor, standard_bm);
 
 		cvNamedWindow("Zeigensfenster", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Zeigensfenster",bm_bm2cvmat(standard_bm));
@@ -89,11 +90,12 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 
 		printf("Das ist ");
 		//fgets(str,9,stdin);
+		fgets(str,9,stdin);
 		chomp(str);
 		printf("%c\n",str[0]);
 
 		fprintf(f_vektor, "%s\n", str);
-		for (i = 0; i < ZEICHEN_VEKTOR_LAENGE; i++) {
+		for (i = 0; i < vektor_laenge; i++) {
 			fprintf(f_vektor, "%d ", vektor[i]);
 		}
 		fprintf(f_vektor, "\n");
@@ -131,6 +133,7 @@ int main(int argc, char *argv[], char *env[])
 		bm = preprocess(src);
 		lernen_text_pro_zeichen(bm);
 		bm_release(bm);
+
 		
 		/* das original Bild anzeigen */
 		/*
@@ -139,6 +142,8 @@ int main(int argc, char *argv[], char *env[])
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
 		*/
+
+		cvReleaseData(src);
 	}
 
 	return 0;
