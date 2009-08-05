@@ -41,12 +41,19 @@ struct intern_bitmap {
 
 void ocr_error(const char *msg);
 
+int ocr_abs(int a);
+
+long lquadrat(long a);
+
 int bm_getpixel(const struct intern_bitmap *bm, int row, int col);
 
 int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 						unsigned char pixelvalue);
 
 int bm_release(struct intern_bitmap *bm);
+
+struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm,
+					int new_height, int new_width);
 
 struct intern_bitmap *preprocess(IplImage *src);
 
