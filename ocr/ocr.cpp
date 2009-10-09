@@ -1,3 +1,10 @@
+/*!
+ * \file ocr.cpp 
+ * \brief Haupte Benutzerschnittstellesimplementierung
+ *
+ * Diese Datei enthält den Teil, den direkt mit Benutzer kommunizieren.
+ * Sie bietet die Haupt Routine (Schnittstelle) an.
+ */
 #include <stdio.h>
 #include <string.h>
 
@@ -9,24 +16,31 @@
 
 
 
-/* Diese Datei enthält den Teil, den direkt mit Benutzer kommunizieren.
- * Sie bietet die Haupt Routine (Schnittstelle) an.
- */
 
 //#define ocr_abs abs
+/*! eine Implementierung vom Absolutenwertrechnen */
 /*inline*/ int ocr_abs(int a)
 {
 	return a > 0 ? a : -a;
 }
 
+/*! quadrat eines long-typ Wertes. Die Funktion soll die Gewichtfunktion der Vektor sein, 
+ * in dieser Verison ist sie Standardabweichung.*/
 /*inline*/ long lquadrat(long a)
 {
 	return a*a;
 }
 
+/*!
+ * \brief allgemeine Fehlerbehandelung.
+ *
+ * In dieser Version wird eine Fehlerbeschreibung in Standarder 
+ * Feherausgang ausgeliefert.
+ * \param msg die Fehlersbeschreibung
+ */
 void ocr_error(const char *msg)
 {
-	printf("%s\n", msg);
+	fprintf(stderr, "%s\n", msg);
 	exit(127);
 }
 
@@ -37,6 +51,12 @@ void ocr_error(const char *msg)
  *
  */
 
+/*! entnehmen ein Punkt aus einer intern_bitmap Struktur
+ *  \param bm	Zeiger zu einer intern_bitmap Struktur
+ *  \param row	Zeile des Punktes, fängt mit 0 an
+ *  \param col	Spaltzahl des Punktes, fängt mit 0 an
+ *  \return	den Wert des Punktes
+ */
 int bm_getpixel(const struct intern_bitmap *bm, int row, int col)
 {
 	/* es wird angenommen, dass der Puffer von intern_bitmap
@@ -50,62 +70,87 @@ int bm_getpixel(const struct intern_bitmap *bm, int row, int col)
 	return bm->buffer[row * bm->width + col];
 }
 
+/*! ein Punkt in einer intern_bitmap Struktur einschreiben
+ *  \param bm		Zeiger zu einer intern_bitmap Struktur
+ *  \param row		Zeile des Punktes, fängt mit 0 an
+ *  \param col		Spaltzahl des Punktes, fängt mit 0 an
+ *  \param pixelvalue	der neue Wert des genannten Punktes
+ *  \return 		den alten Wert des genannten Punktes
+ */
 int bm_setpixel(const struct intern_bitmap *bm, int row, int col,
 						unsigned char pixelvalue)
 {
+	int altes_pixel;
 	if ((col >= bm->width) || (row >= bm->height)) {
 		ocr_error("bm_getpixel: unrichtige Anforderung");
 		return 256;
 	}
+	altes_pixel = bm->buffer[row * bm->width + col];
 	bm->buffer[row * bm->width + col] = pixelvalue;
-	return pixelvalue;
+	return altes_pixel;
 }
 
+/*!\brief verändern die Größe eines beliebigen viereckigen Bitmaps
+ *
+ * \param org_bm	das Original Bitmap (wird nicht geändert)
+ * \param new_height	die neue Höhe des skalierte Bitmap
+ * \param new_width	das neue Breite des skalierte Bitmap
+ * \return		liefert einen neu allozierten Speicherbereich zurück,
+ * 			die das skalierte Bitmap enthältet
+ * \warning		neue Speicherplatz wird von Heap durch malloc() 
+ * 			Funktion reserviert. Falls man sie nicht freisetzen,
+ * 			wird ein 'Speicherloch' erzeugen.
+ */
 struct intern_bitmap* bm_skalieren(const struct intern_bitmap *org_bm,
 					int new_height, int new_width)
 {
-int i,j;
-struct intern_bitmap *neu_bm;
-/*float verhaeltnis_width, verhaeltnis_height;*/
+	int i,j;
+	struct intern_bitmap *neu_bm;
+	/*float verhaeltnis_width, verhaeltnis_height;*/
 
-if (new_width <= 0 || new_height <= 0)
-	return NULL;
+	if (new_width <= 0 || new_height <= 0)
+		return NULL;
 
-BM_ALLOC(neu_bm, new_height, new_width);
+	BM_ALLOC(neu_bm, new_height, new_width);
 
-/* initialisieren */
-for (i = 0; i < new_height; i++) {
-	for (j = 0; j < new_width; j++) {
-		bm_setpixel(neu_bm, i, j, 0);
+	/* initialisieren */
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			bm_setpixel(neu_bm, i, j, 0);
+		}
 	}
-}
 
-for (i = 0; i < new_height; i++) {
-	for (j = 0; j < new_width; j++) {
-		/* vermeiden die Float operation!! */
-		int pixel;
-		pixel = bm_getpixel(org_bm,
-				i * org_bm->height / new_height,
-				j * org_bm->width / new_width);
-		bm_setpixel(neu_bm, i, j, pixel);
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			/* vermeiden die Float operation!! */
+			int pixel;
+			pixel = bm_getpixel(org_bm,
+					i * org_bm->height / new_height,
+					j * org_bm->width / new_width);
+			bm_setpixel(neu_bm, i, j, pixel);
+		}
 	}
-}
 
-/*
+	/*
 #ifdef DEBUG
-printf("\n");
-for (i = 0; i < new_height; i++) {
-	for (j = 0; j < new_width; j++) {
-		printf("%c",bm_getpixel(neu_bm, i, j) == 0 ? ' ' : 'X');
-	}
 	printf("\n");
-}
+	for (i = 0; i < new_height; i++) {
+		for (j = 0; j < new_width; j++) {
+			printf("%c",bm_getpixel(neu_bm, i, j) == 0 ? ' ' : 'X');
+		}
+		printf("\n");
+	}
 #endif
-*/
+	*/
 
-return neu_bm;
+	return neu_bm;
 }
 
+/*!
+ * \brief freisetzen eines allozierten Bitmaps
+ * \param bm	die intern_bitmap Struktur freizusetzen
+ * \return	in dieser Version immer 0
+ */
 int bm_release(struct intern_bitmap *bm)
 {
 	if (bm) {
@@ -117,6 +162,16 @@ int bm_release(struct intern_bitmap *bm)
 	return 0;
 }
 
+/*! \brief konvertieren eine CvMat Struktur ins intern_bitmap
+ *
+ * Eine Schnittstelle zum OpenCV, das Matrix in OpenCV ins intern_bitmap
+ * umsetzen
+ * \param mat	eine gültige CvMat Variable
+ * \return	eine neue allozierte intern_bitmap Abbildung
+ * \warning	neue Speicherplatz wird von Heap durch malloc()
+ * 		Funktion reserviert. Falls man sie nicht freisetzen,
+ *		wird ein 'Speicherloch' erzeugen.
+ */
 struct intern_bitmap *bm_cvmat2bm(const CvMat *mat)
 {
 	struct intern_bitmap *bm;
@@ -153,6 +208,12 @@ struct intern_bitmap *bm_cvmat2bm(const CvMat *mat)
 	return bm;
 }
 
+/*! \brief konvertieren ein intern_bitmap ins CvMat
+ *
+ * \param bm	ein gültiges intern_bitmap
+ * \return	die vom Parameter neue erzeugte CvMat Struktur
+ * \warning	Bitte löschen den rückgelieferte CvMat nachher!
+ */
 CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
 {
 	/* die Puffer einfach kopieren */
@@ -178,9 +239,10 @@ CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
 	return mat;
 }
 
+/*! Ist eine Zelle nicht 0, dann ist sie 255 , für Debug*/
 /*static*/ CvMat *bm_bm2cvmat_kontrast(const struct intern_bitmap *bm)
 {
-	/* falls eine Zelle nicht 0, dann ist sie 255 , für Debug*/
+	/* Ist eine Zelle nicht 0, dann ist sie 255 , für Debug*/
 	CvMat *mat;
 	int i;
 	unsigned char *p;

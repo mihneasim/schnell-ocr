@@ -1,6 +1,6 @@
 CFLAGS= -Wall -O2 -march=nocona -pipe -fomit-frame-pointer -mmmx -msse -msse2 -msse3
 
-.PHONY: all tags clean tools hauptteil
+.PHONY: all tags clean tools hauptteil docs
 
 MAKEFILE=Makefile
 
@@ -27,3 +27,6 @@ hauptteil:
 
 tools:
 	CFLAGS="$(CFLAGS)" $(MAKE) -C tools
+	
+docs:
+	doxygen

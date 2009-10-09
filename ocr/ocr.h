@@ -1,3 +1,10 @@
+/*!
+ * \file ocr.h
+ * \brief anmeldungen der haupten Benutzerschnittstelle
+ *
+ * Diese Datei enthält den Teil, den direkt mit Benutzer kommunizieren.
+ * Sie bietet die Haupt Routine (Schnittstelle) an.
+ */
 #ifndef __OCR__H__
 #define __OCR__H__
 
@@ -10,14 +17,23 @@
 
 /* Makros */
 
+/*! der Typ des Vektorelementes */
 typedef int vektor_t;
 
-/* die Struktur kann total groß sein,  vorsichtig auf dem Stack! */
+/*! \warning Diese Struktur kann total groß sein,  vorsichtig auf dem Stack! */
 struct zeichenvektor {
-	char zeichen_puffer[ENCODE_LAENGE]; /* ein NULL endet zeichenkette*/
+	/*! ein NULL endet zeichenkette*/
+	char zeichen_puffer[ENCODE_LAENGE];
+	/*! der Vektor, der einen Zeichen(u. -kombination) beschreibt */
 	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
 };
 
+/*! allozieren ein neues intern_bitmap mit den gegebenen Parameter
+ * \param BM		der Zeiger des intern_bitmaps
+ * \param HEIGHT	die Höhe des neuen Bitmaps
+ * \param WIDTH		das Breite des neuen Bitmaps
+ * \return		keine Rückgabe
+ */
 #define BM_ALLOC(BM,HEIGHT,WIDTH) do{\
 			BM = (struct intern_bitmap *) \
 				malloc(sizeof(struct intern_bitmap));\
@@ -29,10 +45,21 @@ struct zeichenvektor {
 
 /* Strukturen */
 
+/*!
+ * \brief die wichtigsten Zwieschenstruktur
+ *
+ * Alle Arbeiten beziehen sich auf diese Struktur.
+ * Die Struktur beschreibt ein viereckiges Bitmap mit beliebiger Größe.
+ */
 struct intern_bitmap {
+	/*! Breite und Höhe des Bitmaps */
 	int width, height;
-	int aufloesung;   /* die Länge, die bisschen größer als Störung ist */
+	/*! ein bisschen größer als die Störung */
+	int aufloesung;
+	/*! Pufferzeiger, normalerweise zeigt es in eine Heap-zelle */
 	unsigned char *buffer;
+	/*! damit die Kette kann in in eine 
+	 * allgemeine Liste hingesetzt wernden*/
 	struct list_head list;
 };
 

@@ -1,15 +1,38 @@
+/*!
+ * \file list.h
+ * \brief eine Untermenge von der list.h des Linux-Kernes
+ */
+
 #ifndef __WCR__LIST_H__
 #define __WCR__LIST_H__
 
+/*! \brief Kettenkopfstruktur   
+ *
+ * Diese Struktur wird in irgendeine andere Struktur eingebettet
+ */
 struct list_head {
 	struct list_head *prev, *next;
 };
 
+
+
+/*!
+ * \brief Statische Initialisierung eines Kettenkopfs
+ * \param name der Kettenkopf
+ */
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
+/*!
+ * \brief anmelden eine neue Liste
+ * \param name der Kettenkopf
+ */
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
+/*!
+ * \brief Dynamische Initialisierung eines Kettenkopfs
+ * \param list der Kettenkopf
+ */
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
 	list->next = list;
@@ -51,24 +74,21 @@ static inline void list_add_tail(struct list_head *new_node, struct list_head *h
 }
 
 
-/* @ptr:	the pointer to the member.
- * @type:	the type of the container struct this is embedded in.
- * @member:	the name of the member within the struct.
+/*!
+ * \brief		Aufrufen den Container
+ * \param ptr		Die Adresse des Kettenzeigers, den der Container enthältet
+ * \param type		Der Typ des Containers
+ * \param member	Der Zeigersname in dem Container
  */
 
 #define list_entry(ptr, type, member) \
 		(type *)((char *)(ptr) - (char *)(&((type *)0)->member))
 
 
-/**
- * __list_for_each	-	iterate over a list
- * @pos:	the &struct list_head to use as a loop cursor.
- * @head:	the head for your list.
- *
- * This variant differs from list_for_each() in that it's the
- * simplest possible list iteration code, no prefetching is done.
- * Use this for code that knows the list to be very short (empty
- * or 1 entry) most of the time.
+/*!
+ * \brief Iteration durch eine Ketteteliste
+ * \param pos	the struct *list_head fungiert als einen Cursor.
+ * \param head	der Chef der Liste
  */
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); pos = pos->next)
