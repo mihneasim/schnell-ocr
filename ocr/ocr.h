@@ -50,6 +50,7 @@ struct zeichenvektor {
  *
  * Alle Arbeiten beziehen sich auf diese Struktur.
  * Die Struktur beschreibt ein viereckiges Bitmap mit beliebiger Größe.
+ * in meisten Fälle ist das Bitmap eine binärisierte (zweigrauwertige) Abbildung
  */
 struct intern_bitmap {
 	/* Breite und Höhe des Bitmaps */

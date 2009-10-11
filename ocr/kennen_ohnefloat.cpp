@@ -1,3 +1,7 @@
+/*!
+ * \file	kennen_ohnefloat.cpp
+ * \brief	eine Kennungsmethode, ohne Manipulation der Floatzahle
+ */
 #include <stdio.h>
 #include <string.h>
 
@@ -13,7 +17,16 @@
 
 /******************************************************************************/
 /* das Zeichen manipulieren: */
-static struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap* zeichen)
+
+/*!
+ * das Zeichen wird um den Rand geschnitten
+ * \param zeichen 	das Zeichen zu schneiden,
+ * 			die originale Daten bleibt ohne Änderung
+ * \return 		eine neue Abbildung von dem geschnitten Zeichen
+ * \warning		die neue Abbildung muss manuell freigesetzt werden
+ */
+static struct intern_bitmap* zeichen_umfang_schneiden(
+		const struct intern_bitmap* zeichen)
 {
 	struct intern_bitmap *neu_bm;
 	int i, j;
@@ -100,6 +113,14 @@ static struct intern_bitmap* zeichen_umfang_schneiden(const struct intern_bitmap
 	return neu_bm;
 }
 
+/*!
+ * Ändern die Größe des gegeben Zeichen nach dem voreingestellten Wert
+ * Statt normalisierung des Vektors, machen wir die Bitmap gleichmäßig
+ * \param zeichen	die originale  Zeichensabbildung.
+ * 			Die originale Daten bleibt ohne Änderung
+ * \return		die standardisierte Abbildung
+ * \warning		die neue Abbildung muss manuell freigesetzt werden
+ */
 struct intern_bitmap* zeichen_standardisieren(
 		const struct intern_bitmap* zeichen)
 {
@@ -415,6 +436,17 @@ static int vektor_generieren_linksuntern(vektor_t *vektor,
 	return verschiebung;
 }
 
+
+/*!
+ * erzeugen einen Vektor aus einem gegebenen Zeichenbitmap
+ * \param vektor	Als Ausgabe muss der Vektor vor dem Aufruf alloziert,
+ * 			die Elementen wird ohne allokation direkt
+ * 			hineingeschrieben
+ * \param zeichen	die Zeichenabbildung wird unverändert geblieben
+ * \return		die Länge des Vektors
+ * \warning		Vorsicht auf den Vektorparameter:
+ * 			es erzeugt unsicherte Code
+ */
 int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	/* vektor in Uhrzeigerrichtung von dem Zeichen generieren */
@@ -463,12 +495,22 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 	return verschiebung;
 }
 
+/*!
+ * vergleichen zwei Vektoren.
+ * \param vektor	der Vektor zu vergleichen
+ * \param vektor_muster	das Muster zu vergleichen mit
+ * \param laenge	die Länge von vektor sowie vektor_muster
+ *
+ * die beiden Parameter werden ungeändert
+ * \return	das Ergebnis des Vergleichs.
+ * 		(in dieser Version ist ihre quadratische Standardabweichung)
+ */
 long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
 {
 	int i;
 	long ergebnis;
 
-	/* für die Sicherheit:*/
+	/* für Sicherheit:*/
 	if (laenge > ZEICHEN_VEKTOR_LAENGE) return -1;
 
 	ergebnis = 0;
@@ -481,6 +523,14 @@ long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
 	return ergebnis;
 }
 
+
+/*!
+ * suchen das beste Ergebnis.
+ * \param bm		das Bitmap eines Textes zu kennen
+ * \param ergebnis	das Ergebnis, als Zeichenkette
+ * \param laenge	die Beschränkung des ergebnis
+ * 			(in Byte, inkl. des NULL-Ende)
+ */
 int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 {
 	/* liefert länge der erkannte Zeichen zurück*/
