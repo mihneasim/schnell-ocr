@@ -30,3 +30,6 @@ tools:
 	
 docs:
 	doxygen
+
+statistic:
+	wc -l `find -name '*.cpp' -o -name '*.h' -o -name '*.pl' -o -iname 'Makefile'`

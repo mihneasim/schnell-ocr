@@ -20,9 +20,9 @@
 /*! der Typ des Vektorelementes */
 typedef int vektor_t;
 
-/*! \warning Diese Struktur kann total groß sein,  vorsichtig auf dem Stack! */
+/*! \warning Diese Struktur kann total groß sein,  vorsicht auf dem Stack! */
 struct zeichenvektor {
-	/*! ein NULL endet zeichenkette*/
+	/*! ein NULL endet Zeichenkette*/
 	char zeichen_puffer[ENCODE_LAENGE];
 	/*! der Vektor, der einen Zeichen(u. -kombination) beschreibt */
 	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
@@ -52,7 +52,7 @@ struct zeichenvektor {
  * Die Struktur beschreibt ein viereckiges Bitmap mit beliebiger Größe.
  */
 struct intern_bitmap {
-	/*! Breite und Höhe des Bitmaps */
+	/* Breite und Höhe des Bitmaps */
 	int width, height;
 	/*! ein bisschen größer als die Störung */
 	int aufloesung;

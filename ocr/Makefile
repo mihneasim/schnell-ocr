@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: ocr.o methode1.o
+all: ocr.o kennen_ohnefloat.o
 
 clean:
 	-rm *.o
@@ -8,5 +8,5 @@ clean:
 ocr.o: ocr.cpp
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` $< -c -o $@
 
-methode1.o: methode1.cpp
+kennen_ohnefloat.o: kennen_ohnefloat.cpp
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` $< -c -o $@

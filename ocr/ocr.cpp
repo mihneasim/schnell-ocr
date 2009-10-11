@@ -266,6 +266,12 @@ CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
  * hier fängt  ein einfachstes Trennungsschema an
  *
  */
+
+/*!
+ * \brief Trennen eine Zeile durch Projektionsdichte in einzelne Zeichen
+ * \param zeile	die Zeile zu trennen (die originalen Daten wird nicht modifiziert)
+ * \return	eine Liste von intern_bitmap, die einzelne Zeichen enthält
+ */
 static struct list_head*
 		projektion_spalten_trennen(const struct intern_bitmap *zeile)
 {
@@ -357,7 +363,11 @@ static struct list_head*
 	return zeichenliste;
 }
 
-
+/*!
+ * \brief Trennen einen Text in Zeilen
+ * \param bild	der ganze Text
+ * \return	eine Liste von intern_bitmap, die einzelne Zeilen enthält
+ */
 static struct list_head*
 		zeilen_trennen(const struct intern_bitmap *bild)
 {
@@ -416,6 +426,11 @@ static struct list_head*
 }
 
 
+/*!
+ * ein Texttrennungsschema. Kombination von einfachsten Zeilen- und Spalttrennung
+ * \param bild	der ganze Text
+ * \return	eine Liste von intern_bitmap, die einzelne Zeichen enthält
+ */
 struct list_head*
 		einfach_trennen(const struct intern_bitmap *bild)
 {
@@ -443,7 +458,7 @@ struct list_head*
 }
 
 /******************************************************************************/
-
+/*! noch nicht implementiert */
 static int rauschen_entfernen(const struct intern_bitmap *bm)
 {
 	int rauschen_ventil;
@@ -452,9 +467,13 @@ static int rauschen_entfernen(const struct intern_bitmap *bm)
 	return rauschen_ventil;
 }
 
+/*! Die Umwandlung von OpenCV nach binärem intern_bitmap
+ * \param src	die in OpenCV geöffnet Abbildung
+ * \return	das Umgesetzte binäre (zweigrauige) Bitmap
+ */
 struct intern_bitmap *preprocess(IplImage *src)
 {
-	/* Die Umwandlung zwischen OpenCV und intern_bitmap */
+	/* Die Umwandlung von OpenCV nach intern_bitmap */
 	CvMat *mat;
 	struct intern_bitmap *bm;
 
@@ -482,4 +501,3 @@ struct intern_bitmap *preprocess(IplImage *src)
 
 	return bm;
 }
-
