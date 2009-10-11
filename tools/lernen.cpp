@@ -7,7 +7,7 @@
 #include <cxcore.h>
 
 #include "ocr.h"
-
+#include "kennen_ohnefloat.h"
 
 int chomp(char *str)
 {
@@ -38,7 +38,7 @@ int lernen_zeichen(int *vektor, struct intern_bitmap *zeichen)
 	int vektor_laenge;
 
 	if (vektor == NULL) return 0;
-	
+
 	vektor_laenge = vektor_generieren(vektor, zeichen);
 	/*
 	#ifdef DEBUG

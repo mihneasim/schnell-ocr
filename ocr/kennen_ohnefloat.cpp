@@ -6,6 +6,7 @@
 #include <cxcore.h>
 
 #include "ocr.h"
+#include "kennen_ohnefloat.h"
 
 /* für Debug: */
 #include "../muster.c"

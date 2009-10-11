@@ -10,6 +10,7 @@
 
 
 #include "ocr.h"
+#include "kennen_ohnefloat.h"
 
 
 #define ERGEBNIS_LAENGE 100
@@ -29,7 +30,7 @@ int main(int argc, char *argv[], char *env[])
 
 	/* init OpenCV */
 	cvInitSystem(argc, argv);
-	
+
 	for (i = 1; i < argc; i++ ) {
 		/* Bild Lesen */
 		src = cvLoadImage(argv[i], CV_LOAD_IMAGE_GRAYSCALE);
@@ -37,7 +38,7 @@ int main(int argc, char *argv[], char *env[])
 			printf("Error: cvLoadImage()\n");
 			return 1;
 		}
-		
+
 		/* das original Bild anzeigen */
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Demo Window", src);
@@ -49,9 +50,9 @@ int main(int argc, char *argv[], char *env[])
 		bm_release(bm);
 
 		cvReleaseData(src);
-		
+
 		printf("Ergebnis: %s\n", ergebnis);
-		
+
 	}
 	return 0;
 }

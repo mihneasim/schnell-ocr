@@ -1,7 +1,8 @@
 .PHONY: all clean
 
 ocr_path=../ocr
-ocr_objs=$(ocr_path)/ocr.o $(ocr_path)/methode1.o
+#ocr_objs=$(ocr_path)/ocr.o $(ocr_path)/kennen_ohnefloat.o
+ocr_objs=$(ocr_path)/*.o
 #ocr_sources:=$(OCR_PATH)/ocr.cpp
 
 all:lernen tester

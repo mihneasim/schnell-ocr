@@ -89,17 +89,6 @@ struct intern_bitmap *bm_cvmat2bm(const CvMat *mat);
 struct list_head*
 		einfach_trennen(const struct intern_bitmap *bild);
 
-struct intern_bitmap* zeichen_standardisieren(
-		const struct intern_bitmap* zeichen);
-
-int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge);
-
 /*CvMat *bm_bm2cvmat_kontrast(struct intern_bitmap *bm);*/
-
-CvMat *bm_bm2cvmat(const struct intern_bitmap *bm);
-
-int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen);
-
-long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge);
 
 #endif /*__OCR__H__*/
