@@ -1,3 +1,4 @@
+- fixme: 将kennen_ohnefloat分離后头文件的內容末完全分淸，当如 mehrrichtungabtasten分支
 - 添加探测方向
 - 添加上下文判断
 	設置bool的in_kontext选项
