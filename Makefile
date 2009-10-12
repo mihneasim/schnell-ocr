@@ -27,7 +27,7 @@ hauptteil:
 
 tools:
 	CFLAGS="$(CFLAGS)" $(MAKE) -C tools
-	
+
 docs:
 	doxygen
 
