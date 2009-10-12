@@ -17,17 +17,6 @@
 
 /* Makros */
 
-/*! der Typ des Vektorelementes */
-typedef int vektor_t;
-
-/*! \warning Diese Struktur kann total groß sein,  vorsicht auf dem Stack! */
-struct zeichenvektor {
-	/*! ein NULL endet Zeichenkette*/
-	char zeichen_puffer[ENCODE_LAENGE];
-	/*! der Vektor, der einen Zeichen(u. -kombination) beschreibt */
-	vektor_t vektor[ZEICHEN_VEKTOR_LAENGE];
-};
-
 /*! allozieren ein neues intern_bitmap mit den gegebenen Parameter
  * \param BM		der Zeiger des intern_bitmaps
  * \param HEIGHT	die Höhe des neuen Bitmaps
