@@ -150,6 +150,8 @@ struct intern_bitmap* zeichen_standardisieren(
 
 
 /******************************************************************************/
+
+
 static int vektor_generieren_oben(vektor_t *vektor,
 				const struct intern_bitmap *zeichen)
 {
@@ -437,6 +439,7 @@ static int vektor_generieren_linksuntern(vektor_t *vektor,
 }
 
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*!
  * erzeugen einen Vektor aus einem gegebenen Zeichenbitmap
  * \param vektor	Als Ausgabe muss der Vektor vor dem Aufruf alloziert,
