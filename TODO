@@ -1,4 +1,15 @@
-- 更智能的切割
-- 判断字符在行中的上下位置及大小
 - 添加探测方向
 - 添加上下文判断
+	設置bool的in_kontext选项
+	+
+	struct kontext {
+		/*Möglichkeitsgewicht*/
+		int buchstabe;
+		int ziffer;
+		int symbol;
+		int ...
+	}
+	对应調整vektor_vergleich的值
+- 更智能的切割
+	画一条平均等分线
+- 判断字符在行中的上下位置及大小

@@ -267,6 +267,7 @@ CvMat *bm_bm2cvmat(const struct intern_bitmap *bm)
  *
  */
 
+
 /*!
  * \brief Trennen eine Zeile durch Projektionsdichte in einzelne Zeichen
  * \param zeile	die Zeile zu trennen (die originalen Daten wird nicht modifiziert)
@@ -363,6 +364,7 @@ static struct list_head*
 
 	return zeichenliste;
 }
+
 
 /*!
  * \brief Trennen einen Text in Zeilen
