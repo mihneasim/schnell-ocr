@@ -10,7 +10,7 @@
 
 
 /*! Die Länge eines getrennten Zeichenbitmaps */
-#define STANDARD_ZEICHEN_WIDTH	30 
+#define STANDARD_ZEICHEN_WIDTH	30
 /*! Die Höhe eines getrennten Zeichenbitmaps */
 #define STANDARD_ZEICHEN_HEIGHT	30
 /*!
@@ -22,12 +22,8 @@
 /* oben, untern, links, rechts : vier seiten Richtungen	(1)
  * +
  * die Richtungen aus vier Ecken			(2)
- *
- *
- * (1) und (2) muss verdoppelt werden. um das Innere des Zeichens abzutasten
- *
  */
-#define ZEICHEN_VEKTOR_LAENGE	(2 * (\
+#define ZEICHEN_VEKTOR_LAENGE	(\
 					( 2 * \
 						(STANDARD_ZEICHEN_WIDTH +\
 						 STANDARD_ZEICHEN_HEIGHT)\
@@ -38,8 +34,7 @@
 						 STANDARD_ZEICHEN_HEIGHT\
 						 - 1)\
 					)\
-				     )\
-				)
+			     	)
 
 
 
