@@ -152,8 +152,20 @@ struct intern_bitmap* zeichen_standardisieren(
 /******************************************************************************/
 
 
+/*!
+ * generieren die Vektor von oben nach untern
+ * annehmen, die maske wurde schon alle auf 1 aufgefüllt, die Funktion
+ * generieren einen vektor, und gleichzeitig schnitzt eine Maske.
+ * In der Maske wird äußersten Rand der Figur schmelzen.
+ * \param vektor	der Ausgang
+ * \param zeichen	das original Bitmapzeichen nur zu lesen
+ * \param maske		Falls es nicht NULL ist.
+ * 			sei das Maskenbitmap zu manipulieren.
+ * \return 		die Vektorslänge
+ */
 static int vektor_generieren_oben(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung nach untern */
 	int i, j;
@@ -167,14 +179,27 @@ static int vektor_generieren_oben(vektor_t *vektor,
 		for (i = 0; i < zeichen->height; i++) {
 			if (bm_getpixel(zeichen,i ,j))
 				break;
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, i, j, 0);
+			}
 		}
 		vektor[verschiebung++] = i;
+		/* schmelzen */
+		if (bm_maske) {
+			for (; i < zeichen->height; i++) {
+				if (!bm_getpixel(zeichen,i ,j))
+					break;
+				bm_setpixel(bm_maske, i, j, 0);
+			}
+		}
 	}
 	return verschiebung;
 }
 
 static int vektor_generieren_untern(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung nach oben */
 	int i, j;
@@ -188,14 +213,27 @@ static int vektor_generieren_untern(vektor_t *vektor,
 		for (i = zeichen->height - 1; i >= 0; i--) {
 			if (bm_getpixel(zeichen,i ,j))
 				break;
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, i, j, 0);
+			}
 		}
 		vektor[verschiebung++] = zeichen->height - i - 1;
+		/* schmelzen*/
+		if (bm_maske) {
+			for (; i >= 0; i--) {
+				if (!bm_getpixel(zeichen,i ,j))
+					break;
+				bm_setpixel(bm_maske, i, j, 0);
+			}
+		}
 	}
 	return verschiebung;
 }
 
 static int vektor_generieren_links(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung nach rechts */
 	int i, j;
@@ -209,14 +247,27 @@ static int vektor_generieren_links(vektor_t *vektor,
 		for (j = 0; j < zeichen->width; j++ ) {
 			if (bm_getpixel(zeichen,i ,j))
 				break;
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, i, j, 0);
+			}
 		}
 		vektor[verschiebung++] = j;
+		/* schmelzen */
+		if (bm_maske) {
+			for (; j < zeichen->width; j++ ) {
+				if (!bm_getpixel(zeichen,i ,j))
+					break;
+				bm_setpixel(bm_maske, i, j, 0);
+			}
+		}
 	}
 	return verschiebung;
 }
 
 static int vektor_generieren_rechts(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung nach links */
 	int i, j;
@@ -230,15 +281,28 @@ static int vektor_generieren_rechts(vektor_t *vektor,
 		for (j = zeichen->width - 1; j >= 0; j-- ) {
 			if (bm_getpixel(zeichen,i ,j))
 				break;
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, i, j, 0);
+			}
 		}
 		vektor[verschiebung++] = zeichen->width - j - 1;
+		/* schmelzen */
+		if (bm_maske) {
+			for (; j >= 0; j-- ) {
+				if (!bm_getpixel(zeichen,i ,j))
+					break;
+				bm_setpixel(bm_maske, i, j, 0);
+			}
+		}
 	}
 	return verschiebung;
 }
 
 
 static int vektor_generieren_linksoben(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung 45 Grad nach rechts untern */
 	int x, y;
@@ -257,12 +321,25 @@ static int vektor_generieren_linksoben(vektor_t *vektor,
 		while ((x < zeichen->width) && (y < zeichen->height)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x++;
 			y++;
 		}
 		/* x ist die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = x;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x < zeichen->width) && (y < zeichen->height)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x++;
+				y++;
+			}
+		}
 	}
 
 	/* waagerecht von links nach rechts */
@@ -274,20 +351,34 @@ static int vektor_generieren_linksoben(vektor_t *vektor,
 		while ((x < zeichen->width) && (y < zeichen->height)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x++;
 			y++;
 		}
 
 		/* y ist die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = y;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x < zeichen->width) && (y < zeichen->height)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x++;
+				y++;
+			}
+		}
 	}
 
 	return verschiebung;
 }
 
 static int vektor_generieren_rechtsoben(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung 45 Grad nach links untern */
 	int x, y;
@@ -306,13 +397,26 @@ static int vektor_generieren_rechtsoben(vektor_t *vektor,
 		while ((x >= 0) && (y < zeichen->height)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x--;
 			y++;
 		}
 
 		/* y ist die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = y;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x >= 0) && (y < zeichen->height)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x--;
+				y++;
+			}
+		}
 	}
 
 	/* senkrecht, von oben nach untern */
@@ -324,12 +428,25 @@ static int vektor_generieren_rechtsoben(vektor_t *vektor,
 		while ((x >= 0) && (y < zeichen->height)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x--;
 			y++;
 		}
 		/* die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = y - i;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x >= 0) && (y < zeichen->height)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x--;
+				y++;
+			}
+		}
 	}
 
 
@@ -338,7 +455,8 @@ static int vektor_generieren_rechtsoben(vektor_t *vektor,
 
 
 static int vektor_generieren_rechtsuntern(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung 45 Grad nach links oben */
 	int x, y;
@@ -357,12 +475,25 @@ static int vektor_generieren_rechtsuntern(vektor_t *vektor,
 		while ((x >= 0) && (y >= 0)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x--;
 			y--;
 		}
 		/* die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = i - y;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x >= 0) && (y >= 0)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x--;
+				y--;
+			}
+		}
 	}
 
 	/* waagerecht von rechts nach links */
@@ -374,7 +505,10 @@ static int vektor_generieren_rechtsuntern(vektor_t *vektor,
 		while ((x >= 0) && (y >= 0)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x--;
 			y--;
 		}
@@ -382,6 +516,16 @@ static int vektor_generieren_rechtsuntern(vektor_t *vektor,
 		/* die aktuellen Schritte, die der Schleifer läuft*/
 		/*printf("i = %d, x = %d\n", i, x);*/
 		vektor[verschiebung++] = i - x;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x >= 0) && (y >= 0)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x--;
+				y--;
+			}
+		}
 	}
 
 	return verschiebung;
@@ -389,7 +533,8 @@ static int vektor_generieren_rechtsuntern(vektor_t *vektor,
 
 
 static int vektor_generieren_linksuntern(vektor_t *vektor,
-				const struct intern_bitmap *zeichen)
+				const struct intern_bitmap *zeichen,
+				struct intern_bitmap *bm_maske)
 {
 	/* Abtastensrichtung 45 Grad nach rechts oben */
 	int x, y;
@@ -408,13 +553,26 @@ static int vektor_generieren_linksuntern(vektor_t *vektor,
 		while ((x < zeichen->width) && (y >= 0)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x++;
 			y--;
 		}
 
 		/* die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = x - i;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x < zeichen->width) && (y >= 0)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				bm_setpixel(bm_maske, y, x, 0);
+				x++;
+				y--;
+			}
+		}
 	}
 
 	/* senkrecht, von untern nach oben */
@@ -426,12 +584,28 @@ static int vektor_generieren_linksuntern(vektor_t *vektor,
 		while ((x < zeichen->width) && (y >= 0)) {
 			if (bm_getpixel(zeichen, y, x))
 				break;
-
+			if (bm_maske) {
+				/* schnitzen */
+				bm_setpixel(bm_maske, y, x, 0);
+			}
 			x++;
 			y--;
 		}
 		/* x ist die aktuellen Schritte, die der Schleifer läuft*/
 		vektor[verschiebung++] = x;
+		/* schmelzen */
+		if (bm_maske) {
+			while ((x < zeichen->width) && (y >= 0)) {
+				if (!bm_getpixel(zeichen, y, x))
+					break;
+				if (bm_maske) {
+					/* schnitzen */
+					bm_setpixel(bm_maske, y, x, 0);
+				}
+				x++;
+				y--;
+			}
+		}
 	}
 
 
@@ -439,7 +613,6 @@ static int vektor_generieren_linksuntern(vektor_t *vektor,
 }
 
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*!
  * erzeugen einen Vektor aus einem gegebenen Zeichenbitmap
  * \param vektor	Als Ausgabe muss der Vektor vor dem Aufruf alloziert,
@@ -454,37 +627,79 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 {
 	/* vektor in Uhrzeigerrichtung von dem Zeichen generieren */
 	int laenge, verschiebung;
+	struct intern_bitmap *bm_maske;
 
 	if (vektor == NULL) return 0;
 
+	BM_ALLOC(bm_maske, zeichen->height, zeichen->width);
+	memset(bm_maske->buffer, 255, bm_maske->height * bm_maske->width);
+
+
 	verschiebung = 0;
 
-	laenge = vektor_generieren_oben(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_oben(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_rechts(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_rechts(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_untern(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_untern(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_links(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_links(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
 	////////
 
-	laenge = vektor_generieren_linksoben(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_linksoben(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_rechtsoben(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_rechtsoben(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_rechtsuntern(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_rechtsuntern(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
-	laenge = vektor_generieren_linksuntern(&vektor[verschiebung], zeichen);
+	laenge = vektor_generieren_linksuntern(&vektor[verschiebung], zeichen, bm_maske);
 	verschiebung += laenge;
 
+
+
+#ifdef DEBUG
+		cvDestroyWindow("Innere");
+		cvNamedWindow("Innere", CV_WINDOW_AUTOSIZE);
+		cvShowImage("Innere",bm_bm2cvmat(bm_maske));
+		cvWaitKey(-1);
+		// cv_realese()...
+#endif
+
+	/* Vektor der Maske generieren */
+
+	laenge = vektor_generieren_oben(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechts(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_untern(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_links(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	////////
+
+	laenge = vektor_generieren_linksoben(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechtsoben(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_rechtsuntern(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
+
+	laenge = vektor_generieren_linksuntern(&vektor[verschiebung], bm_maske, NULL);
+	verschiebung += laenge;
 	/*
 	#ifdef DEBUG
 	printf("Debug: vektor_generieren():\n");
@@ -494,6 +709,7 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 	printf("\n\n");
 	#endif
 	*/
+	bm_release(bm_maske);
 
 	return verschiebung;
 }
