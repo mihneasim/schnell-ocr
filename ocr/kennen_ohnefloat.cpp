@@ -669,7 +669,7 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 		cvDestroyWindow("Innere");
 		cvNamedWindow("Innere", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Innere",bm_bm2cvmat(bm_maske));
-		cvWaitKey(-1);
+		//cvWaitKey(-1);
 		// cv_realese()...
 #endif
 
