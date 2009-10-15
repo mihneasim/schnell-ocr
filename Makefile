@@ -1,4 +1,4 @@
-CFLAGS= -Wall -O2 -march=nocona -pipe -fomit-frame-pointer -mmmx -msse -msse2 -msse3
+CFLAGS= -Wall -O2 -pipe -fomit-frame-pointer #-march=nocona -mmmx -msse -msse2 -msse3
 
 .PHONY: all tags clean tools hauptteil docs
 
