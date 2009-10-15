@@ -13,7 +13,7 @@
 #include "kennen_ohnefloat.h"
 
 /* für Debug: */
-#include "../muster.c"
+#include "kennen_ohnefloat_muster.c"
 
 /******************************************************************************/
 /* das Zeichen manipulieren: */
