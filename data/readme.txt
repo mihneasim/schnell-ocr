@@ -1,1 +1,3 @@
-das Verzeichnis enthält nur die Datei, aus der die Mustercode erzeugt werden
+das Verzeichnis enthält nur die Dateien, aus den die Mustercode erzeugt
+werden.
+NICHT die Einstellungsdatei !!
