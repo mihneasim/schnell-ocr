@@ -15,13 +15,13 @@ distclean:clean
 	-rm tags
 
 clean:
-	-$(MAKE) -C ocr clean
+	-$(MAKE) -C src clean
 	-$(MAKE) -C tools clean
 	#-rm tags
 
 ###############################################################
 hauptteil:
-	CFLAGS="$(CFLAGS)" $(MAKE) -C ocr
+	CFLAGS="$(CFLAGS)" $(MAKE) -C src
 
 ###############################################################
 
