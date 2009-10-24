@@ -1,4 +1,4 @@
-CFLAGS= -Wall -O2 -march=nocona -pipe -fomit-frame-pointer -mmmx -msse -msse2 -msse3
+CFLAGS= -Wall -O2 -pipe -fomit-frame-pointer #-march=nocona -mmmx -msse -msse2 -msse3
 
 .PHONY: all tags clean tools hauptteil docs
 
@@ -15,13 +15,13 @@ distclean:clean
 	-rm tags
 
 clean:
-	-$(MAKE) -C ocr clean
+	-$(MAKE) -C src clean
 	-$(MAKE) -C tools clean
 	#-rm tags
 
 ###############################################################
 hauptteil:
-	CFLAGS="$(CFLAGS)" $(MAKE) -C ocr
+	CFLAGS="$(CFLAGS)" $(MAKE) -C src
 
 ###############################################################
 

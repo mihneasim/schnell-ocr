@@ -90,7 +90,7 @@ void lernen_text_pro_zeichen(struct intern_bitmap *text_bm)
 
 		printf("Das ist ");
 		//fgets(str,9,stdin);
-		fgets(str,9,stdin);
+		//fgets(str,9,stdin);
 		chomp(str);
 		printf("%c\n",str[0]);
 
