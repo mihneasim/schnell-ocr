@@ -1,5 +1,5 @@
 .PHONY: all clean
-
+CC=g++
 all: ocr.o kennen_ohnefloat.o
 
 clean:

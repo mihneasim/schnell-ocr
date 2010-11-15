@@ -786,10 +786,10 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 			}
 		}
 
-		printf("%s kennbarkeit = -%d\n", daten_muster[kleinst_index].zeichen_puffer, kleinst);
 		strcat(ergebnis, daten_muster[kleinst_index].zeichen_puffer);
 		//+++++++++
 		#ifdef DEBUG
+		printf("%s kennbarkeit = -%d\n", daten_muster[kleinst_index].zeichen_puffer, kleinst);
 		/*
 		printf("%s\n", daten_muster[kleinst_index].zeichen_puffer);
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);

@@ -1,5 +1,5 @@
 .PHONY: all clean
-
+CC=g++
 ocr_path=../src
 #ocr_objs=$(ocr_path)/ocr.o $(ocr_path)/kennen_ohnefloat.o
 ocr_objs=$(ocr_path)/*.o

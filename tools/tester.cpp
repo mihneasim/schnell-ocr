@@ -13,7 +13,7 @@
 #include "kennen_ohnefloat.h"
 
 
-#define ERGEBNIS_LAENGE 100
+#define ERGEBNIS_LAENGE 1000
 char ergebnis[ERGEBNIS_LAENGE];
 
 int main(int argc, char *argv[], char *env[])
@@ -29,7 +29,9 @@ int main(int argc, char *argv[], char *env[])
 	}
 
 	/* init OpenCV */
+  #ifdef DEBUG
 	cvInitSystem(argc, argv);
+  #endif
 
 	for (i = 1; i < argc; i++ ) {
 		/* Bild Lesen */
@@ -40,10 +42,12 @@ int main(int argc, char *argv[], char *env[])
 		}
 
 		/* das original Bild anzeigen */
+    #ifdef DEBUG
 		cvNamedWindow("Demo Window", CV_WINDOW_AUTOSIZE);
 		cvShowImage("Demo Window", src);
 		cvWaitKey(-1);
 		cvDestroyWindow("Demo Window");
+    #endif
 
 		bm = preprocess(src);
 		ocr_bestpassend(bm, ergebnis, ERGEBNIS_LAENGE);

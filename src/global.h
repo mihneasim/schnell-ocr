@@ -6,7 +6,7 @@
 #define __GLOBAL_H__
 
 /*! Debug flag */
-#define DEBUG 1
+//#define DEBUG 1
 
 /*! Die Auflösung einer Störung,
  *  etwas kleiner als der Wert wird als Störung behandelt. 
