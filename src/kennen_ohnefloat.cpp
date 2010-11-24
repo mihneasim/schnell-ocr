@@ -15,6 +15,8 @@
 /* für Debug: */
 #include "kennen_ohnefloat_muster.c"
 
+#include <omp.h>
+
 /******************************************************************************/
 /* das Zeichen manipulieren: */
 
@@ -727,19 +729,19 @@ int vektor_generieren(vektor_t *vektor, const struct intern_bitmap *zeichen)
 long vektor_vergleichen(vektor_t *vektor, vektor_t *vektor_muster, int laenge)
 {
 	int i;
-	long ergebnis;
+	long result;
 
 	/* für Sicherheit:*/
 	if (laenge > ZEICHEN_VEKTOR_LAENGE) return -1;
 
-	ergebnis = 0;
-
-	for (i = 0; i < laenge; i++) {
-		//printf("| %d - %d | = %d\n", vektor[i], vektor_muster[i], ocr_abs(vektor[i] - vektor_muster[i]));
-		ergebnis += lquadrat(ocr_abs(vektor[i] - vektor_muster[i]));
+	result = 0;
+	// lquadrat takes ~8 seconds in a 40 sec run
+	#pragma omp parallel for reduction(+ : result)
+	for (i = 0; i < laenge; i++) 
+	{
+		result += lquadrat(ocr_abs(vektor[i] - vektor_muster[i]));
 	}
-
-	return ergebnis;
+	return result;
 }
 
 
@@ -776,13 +778,15 @@ int ocr_bestpassend(struct intern_bitmap *bm, char *ergebnis, int laenge)
 		kleinst = vektor_vergleichen(vektor, daten_muster[0].vektor, vektor_laenge);
 		kleinst_index = 0;
 
+		#pragma omp parallel for private(zurzeit)
 		for (int i = 0; i < ZEICHEN_MUSTER_MENGE; i++) {
-			//printf("%05ld %s\n",vektor_vergleichen(vektor, daten_muster[i].vektor, vektor_laenge), daten_muster[i].zeichen_puffer);
 			zurzeit = vektor_vergleichen(vektor, daten_muster[i].vektor, vektor_laenge);
-			//printf("zurzeit: %d, kleinst %d\n", zurzeit, kleinst);
+			#pragma omp critical
+			{
 			if (zurzeit < kleinst) {
 				kleinst = zurzeit;
 				kleinst_index = i;
+			}
 			}
 		}
 

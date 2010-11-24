@@ -13,7 +13,7 @@
 #include <cxcore.h>
 
 #include "ocr.h"
-
+#include <omp.h>
 
 
 

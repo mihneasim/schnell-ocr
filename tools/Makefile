@@ -4,7 +4,7 @@ ocr_path=../src
 #ocr_objs=$(ocr_path)/ocr.o $(ocr_path)/kennen_ohnefloat.o
 ocr_objs=$(ocr_path)/*.o
 #ocr_sources:=$(OCR_PATH)/ocr.cpp
-
+CFLAGS=-fopenmp
 all:lernen tester
 
 clean:
@@ -20,7 +20,7 @@ lernen: lernen.o $(ocr_objs)
 
 
 tester: tester.o $(ocr_objs)
-	$(CC) `pkg-config --libs opencv` $^ -o $@
+	$(CC) $(CFLAGS) `pkg-config --libs opencv` $^ -o $@
 
 tester.o: tester.cpp 
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` -I $(ocr_path) $< -c -o $@

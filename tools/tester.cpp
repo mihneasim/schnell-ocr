@@ -13,7 +13,7 @@
 #include "kennen_ohnefloat.h"
 
 
-#define ERGEBNIS_LAENGE 1000
+#define ERGEBNIS_LAENGE 500000
 char ergebnis[ERGEBNIS_LAENGE];
 
 int main(int argc, char *argv[], char *env[])

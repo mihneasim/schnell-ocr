@@ -1,7 +1,7 @@
 .PHONY: all clean
 CC=g++
 all: ocr.o kennen_ohnefloat.o
-
+CFLAGS=-fopenmp
 clean:
 	-rm *.o
 
